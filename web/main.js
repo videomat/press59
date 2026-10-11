@@ -46,3 +46,22 @@ for (const row of rows) {
 }
 
 select('c');
+
+// Show the latest release's version and size under the download buttons.
+// latest.json comes from R2 (see functions/latest.json.js); without it the default text stays.
+async function showLatestRelease() {
+  try {
+    const response = await fetch('/latest.json', { headers: { accept: 'application/json' } });
+    if (!response.ok) return;
+    const release = await response.json();
+    if (!release.version || !Number.isFinite(release.size)) return;
+    const megabytes = (release.size / 1_000_000).toFixed(1);
+    for (const element of document.querySelectorAll('[data-release-info]')) {
+      element.textContent = `Version ${release.version} · ${megabytes} MB · macOS 14 or later`;
+    }
+  } catch {
+    // Keep the default text when the release info can't be loaded.
+  }
+}
+
+showLatestRelease();
