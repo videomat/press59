@@ -1,7 +1,7 @@
 // Interactive keyboard demo: click a key to see which app ⇪ + key opens.
 const apps = {
   c: 'Chrome', s: 'Slack', f: 'Figma', t: 'Terminal', n: 'Notes', m: 'Mail',
-  x: 'Xcode', z: 'Zoom', w: 'WhatsApp', p: 'Photos', l: 'Linear', a: 'Arc',
+  x: 'Xcode', z: 'Zoom', w: 'WhatsApp', p: 'Photos', l: 'Lightroom', a: 'Arc',
   g: 'GarageBand', o: 'Obsidian', k: 'Keynote',
 };
 const rows = [
