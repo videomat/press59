@@ -77,6 +77,11 @@ if [[ -n "$(git status --porcelain)" ]]; then
     exit 1
 fi
 
+if [[ ! -f "$app_directory/Distribution/dmg-background.tiff" ]]; then
+    print "Missing the DMG background. Render it with: swift scripts/render-dmg-background.swift"
+    exit 1
+fi
+
 if [[ ! -f "$app_directory/Config/Signing.local.xcconfig" ]]; then
     print "Missing $app_directory/Config/Signing.local.xcconfig with DEVELOPMENT_TEAM."
     exit 1
@@ -122,7 +127,8 @@ fi
 
 staging_root="$(mktemp -d "${TMPDIR:-/tmp}/press59-release.${version}.XXXXXX")"
 trap '/bin/rm -rf -- "$staging_root"' EXIT
-archive_path="$staging_root/Press59.xcarchive"
+# Save the archive where Xcode keeps its own, so it shows in Organizer with its debug symbols.
+archive_path="$HOME/Library/Developer/Xcode/Archives/$(date +%F)/Press59 ${version} (${build}) $(date +%H.%M).xcarchive"
 export_path="$staging_root/export"
 notary_zip="$staging_root/Press59.zip"
 dmg_source="$staging_root/dmg"
@@ -170,9 +176,11 @@ mkdir -p "$dmg_source"
 ditto "$app_path" "$dmg_source/Press59.app"
 create-dmg \
     --volname "Press59" \
+    --background "$app_directory/Distribution/dmg-background.tiff" \
     --window-pos 200 120 \
     --window-size 560 340 \
     --icon-size 112 \
+    --text-size 12 \
     --icon "Press59.app" 150 160 \
     --hide-extension "Press59.app" \
     --app-drop-link 410 160 \
@@ -211,6 +219,7 @@ print
 print "Release candidate $version ($build) is signed, notarized and packaged. Nothing was uploaded."
 print "  DMG:      $release_path ($size_mb MB)"
 print "  SHA-256:  $sha256"
+print "  Archive:  in Xcode's Organizer (Window › Organizer)"
 print
 print "Test it: open the DMG, install Press59, grant Accessibility and try your shortcuts."
 print "Then release it with: ./scripts/release"
