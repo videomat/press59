@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Runs the homepage locally at http://localhost:8059 (or the port given as $1), with the
-# /download and /latest.json functions backed by a local R2 seeded from dev/.
+# /download and /latest.json functions backed by a local R2 seeded from dev/ and a local D1
+# analytics database (read it with ./scripts/stats --local).
 # Usage: ./scripts/web [port]
 
 set -euo pipefail
@@ -17,5 +18,8 @@ wrangler r2 object put press59-releases/latest.json \
   --file dev/latest.json --content-type application/json --local >/dev/null
 wrangler r2 object put press59-releases/releases/Press59-dev.dmg \
   --file dev/Press59-dev.dmg --content-type application/x-apple-diskimage --local >/dev/null
+
+echo "Applying analytics migrations to the local D1 database..."
+wrangler d1 migrations apply press59-analytics --local >/dev/null
 
 exec npx --yes wrangler@4 pages dev web --port "$port" --ip 127.0.0.1

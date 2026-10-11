@@ -1,8 +1,9 @@
 // GET /download — streams the DMG that latest.json points to, straight from R2.
 
+import { recordDownload } from './_shared/analytics.js';
 import { latestRelease, methodNotAllowed, unavailable } from './_shared/releases.js';
 
-export async function onRequest({ request, env }) {
+export async function onRequest({ request, env, waitUntil }) {
   if (request.method !== 'GET' && request.method !== 'HEAD') return methodNotAllowed();
 
   const release = await latestRelease(env);
@@ -36,6 +37,8 @@ export async function onRequest({ request, env }) {
     return new Response(object.body, { status: 206, headers });
   }
 
+  // Count whole-file downloads only; resumed or partial (range) requests are the same download.
   headers.set('content-length', String(object.size));
+  waitUntil(recordDownload(env, request, release));
   return new Response(object.body, { status: 200, headers });
 }

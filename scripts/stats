@@ -1,0 +1,86 @@
+#!/usr/bin/env node
+// Shows Press59 download stats from the private D1 database (press59-analytics).
+// Usage: ./scripts/stats [--days 30] [--local]
+//   --days N   Period for the breakdowns (default 30)
+//   --local    Read the local development database instead of production
+// Likely bots are left out of every number except the "Filtered as bots" line.
+
+const { execFileSync } = require('node:child_process');
+const path = require('node:path');
+
+const args = process.argv.slice(2);
+const local = args.includes('--local');
+const daysIndex = args.indexOf('--days');
+const days = daysIndex === -1 ? 30 : Number(args[daysIndex + 1]);
+if (!Number.isInteger(days) || days < 1 || args.some((arg) => arg.startsWith('-') && !['--local', '--days'].includes(arg))) {
+  console.error('Usage: ./scripts/stats [--days 30] [--local]');
+  process.exit(1);
+}
+
+const since = (n) => `strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-${n} days')`;
+const people = "client != 'bot'";
+
+const queries = {
+  summary: `SELECT
+      COUNT(*) AS total,
+      COALESCE(SUM(downloaded_at >= strftime('%Y-%m-%d', 'now')), 0) AS today,
+      COALESCE(SUM(downloaded_at >= ${since(7)}), 0) AS last7,
+      COALESCE(SUM(downloaded_at >= ${since(30)}), 0) AS last30,
+      MAX(downloaded_at) AS lastDownload
+    FROM downloads WHERE ${people}`,
+  bots: `SELECT COUNT(*) AS bots FROM downloads WHERE client = 'bot'`,
+  daily: `SELECT substr(downloaded_at, 1, 10) AS day, COUNT(*) AS downloads
+    FROM downloads WHERE ${people} AND downloaded_at >= ${since(14)}
+    GROUP BY day ORDER BY day DESC`,
+  versions: `SELECT version, COUNT(*) AS downloads FROM downloads
+    WHERE ${people} AND downloaded_at >= ${since(days)} GROUP BY version ORDER BY downloads DESC`,
+  countries: `SELECT COALESCE(country, '??') AS country, COUNT(*) AS downloads FROM downloads
+    WHERE ${people} AND downloaded_at >= ${since(days)} GROUP BY country ORDER BY downloads DESC LIMIT 10`,
+  sources: `SELECT CASE WHEN source = 'external' THEN COALESCE(referrer_host, 'external') ELSE source END AS source,
+      COUNT(*) AS downloads FROM downloads
+    WHERE ${people} AND downloaded_at >= ${since(days)} GROUP BY 1 ORDER BY downloads DESC LIMIT 10`,
+};
+
+const names = Object.keys(queries);
+let output;
+try {
+  output = execFileSync('npx', [
+    '--yes', 'wrangler@4', 'd1', 'execute', 'press59-analytics',
+    local ? '--local' : '--remote', '--json',
+    '--command', names.map((name) => queries[name].replace(/\s+/g, ' ')).join('; '),
+  ], { cwd: path.join(__dirname, '..'), encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] });
+} catch (error) {
+  console.error('Could not read the analytics database.');
+  process.exit(error.status ?? 1);
+}
+
+const results = JSON.parse(output).map((statement) => statement.results);
+const data = Object.fromEntries(names.map((name, index) => [name, results[index] ?? []]));
+
+function table(title, rows, columns) {
+  console.log(`\n${title}`);
+  if (rows.length === 0) {
+    console.log('  (none yet)');
+    return;
+  }
+  const widths = columns.map((column) => Math.max(...rows.map((row) => String(row[column]).length)));
+  for (const row of rows) {
+    console.log('  ' + columns.map((column, i) => (
+      i === columns.length - 1 ? String(row[column]).padStart(widths[i]) : String(row[column]).padEnd(widths[i])
+    )).join('   '));
+  }
+}
+
+const summary = data.summary[0] ?? {};
+console.log(`Press59 downloads${local ? ' (local)' : ''}`);
+console.log(`  Today          ${summary.today ?? 0}`);
+console.log(`  Last 7 days    ${summary.last7 ?? 0}`);
+console.log(`  Last 30 days   ${summary.last30 ?? 0}`);
+console.log(`  All time       ${summary.total ?? 0}`);
+console.log(`  Last download  ${summary.lastDownload ?? '—'}`);
+console.log(`  Filtered as bots (all time): ${data.bots[0]?.bots ?? 0}`);
+
+table('Last 14 days', data.daily, ['day', 'downloads']);
+table(`Versions (last ${days} days)`, data.versions, ['version', 'downloads']);
+table(`Countries (last ${days} days)`, data.countries, ['country', 'downloads']);
+table(`Sources (last ${days} days)`, data.sources, ['source', 'downloads']);

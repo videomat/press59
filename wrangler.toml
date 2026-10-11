@@ -5,7 +5,14 @@ name = "press59"
 pages_build_output_dir = "web"
 compatibility_date = "2026-10-01"
 
-# Release DMGs and latest.json, uploaded by scripts/deploy-app.
+# Release DMGs and latest.json, uploaded by scripts/release.
 [[r2_buckets]]
 binding = "RELEASES"
 bucket_name = "press59-releases"
+
+# Private download analytics, written by /download and read with scripts/stats.
+[[d1_databases]]
+binding = "DB"
+database_name = "press59-analytics"
+database_id = "670dfc0b-611e-4c98-9a69-91c58373dfec"
+migrations_dir = "migrations"

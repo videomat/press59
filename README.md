@@ -7,7 +7,8 @@ Hold Caps Lock, press a letter, and the app is in front. A tap of Caps Lock on i
 | `app/` | The macOS menu bar app (SwiftUI, XcodeGen) |
 | `web/` | The press59.win homepage (static HTML, no build step) |
 | `functions/` | Cloudflare Pages functions: `/download` and `/latest.json` |
-| `scripts/` | Version, release, website and icon tooling |
+| `migrations/` | D1 schema for the private download analytics |
+| `scripts/` | Version, release, website, analytics and icon tooling |
 | `dev/` | Sample release for the local website |
 
 ## App
@@ -79,6 +80,33 @@ Test that DMG: install it, grant Accessibility, and try your shortcuts. If it's 
 `release` checks the DMG is the unchanged file `package` built from the current commit, uploads it and then `latest.json` to R2, tags `v<version>`, and pushes `main` and the tag when there's a remote. The site switches to the new version as soon as `latest.json` is uploaded.
 
 If testing finds a problem, fix it, bump the version again, and run `package` for a new candidate.
+
+## Download analytics
+
+Every download through `/download` is recorded in a private D1 database, `press59-analytics`: time, version, country, source (homepage, direct, or the referring site) and whether it looks like a bot. No IP addresses or user agents are stored, and there is no public endpoint. Read it from the terminal with your Wrangler login:
+
+```bash
+./scripts/stats                # production
+./scripts/stats --days 7       # breakdowns for the last 7 days (default 30)
+./scripts/stats --local        # the local dev database
+```
+
+Only whole-file downloads count; resumed (range) and HEAD requests don't. Likely bots are excluded from the numbers and shown as one total.
+
+### One-time setup
+
+```bash
+npx wrangler@4 d1 create press59-analytics
+```
+
+Put the printed `database_id` in `wrangler.toml`, then create the table and deploy:
+
+```bash
+npx wrangler@4 d1 migrations apply press59-analytics --remote
+./scripts/deploy-web
+```
+
+Schema changes go in a new file in `migrations/`, applied the same way.
 
 ## Icon
 
