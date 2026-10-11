@@ -15,12 +15,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 @main
-struct SuperkeyApp: App {
+struct Press59App: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        MenuBarExtra("Superkey", systemImage: "capslock.fill") {
+        MenuBarExtra {
             MenuContent(store: appDelegate.store, monitor: appDelegate.monitor)
+        } label: {
+            Image("MenuBarIcon")
+                .accessibilityLabel("Press59")
         }
 
         Settings {
@@ -50,7 +53,7 @@ private struct MenuContent: View {
             openSettings()
         }
         .keyboardShortcut(",")
-        Button("Quit Superkey") {
+        Button("Quit Press59") {
             NSApp.terminate(nil)
         }
         .keyboardShortcut("q")

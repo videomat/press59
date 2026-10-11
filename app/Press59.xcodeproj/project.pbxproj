@@ -7,96 +7,100 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		661A20F8E49489FE0C83247E /* BindingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 468780D9CCA7E053C8C8B7E7 /* BindingStore.swift */; };
-		7868A87ED0B80E114E331898 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F16DACA82EF62D65F4BC85C /* SettingsView.swift */; };
-		85B6A1F058773BC427057583 /* HyperKeyMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 291F54FC01ED6A5A5A72B502 /* HyperKeyMonitor.swift */; };
-		C955AB3FDEBB63B9A853DF6F /* SuperkeyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9C0E29F0EDA78D40C95F76 /* SuperkeyApp.swift */; };
+		7FE78F866A6BF6BE6C8403D5 /* Press59App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7391306DABA6694662C1BE22 /* Press59App.swift */; };
+		823B08889194C79725B97F30 /* BindingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB11B70505DED90BC0F650AC /* BindingStore.swift */; };
+		AE11D6801FFC4997EFE9E187 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C4C99BFD5A74E322E6E5AD /* SettingsView.swift */; };
+		BC7D6415106F58D6D8FE5A1D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ED81F208484C5BC2D33C02E1 /* Assets.xcassets */; };
+		BCBBAB82067B35FD27EB892B /* HyperKeyMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39E89B0E2BDD477B11BE1BA2 /* HyperKeyMonitor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		291F54FC01ED6A5A5A72B502 /* HyperKeyMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HyperKeyMonitor.swift; sourceTree = "<group>"; };
-		468780D9CCA7E053C8C8B7E7 /* BindingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BindingStore.swift; sourceTree = "<group>"; };
-		7F16DACA82EF62D65F4BC85C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		9EFCD989F6758DAC42F875C0 /* Superkey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Superkey.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		BE2178B4D911E5BAA20033D4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		CB9C0E29F0EDA78D40C95F76 /* SuperkeyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuperkeyApp.swift; sourceTree = "<group>"; };
-		DCF34B55C8D0AE0A6E34A30C /* Signing.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.local.xcconfig; sourceTree = "<group>"; };
+		249C890CD7884FA344BBAE39 /* Signing.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.local.xcconfig; sourceTree = "<group>"; };
+		39E89B0E2BDD477B11BE1BA2 /* HyperKeyMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HyperKeyMonitor.swift; sourceTree = "<group>"; };
+		49A64351C2CDC22E7C1AC21B /* Press59.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Press59.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7391306DABA6694662C1BE22 /* Press59App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Press59App.swift; sourceTree = "<group>"; };
+		C93783A08346FDFA5BD884A2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		CB11B70505DED90BC0F650AC /* BindingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BindingStore.swift; sourceTree = "<group>"; };
+		ED81F208484C5BC2D33C02E1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F5C4C99BFD5A74E322E6E5AD /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
-		01B89A1D2911DC011558A9E3 /* Config */ = {
+		2518F9E5EEF27452BB163B2E /* Config */ = {
 			isa = PBXGroup;
 			children = (
-				DCF34B55C8D0AE0A6E34A30C /* Signing.local.xcconfig */,
+				249C890CD7884FA344BBAE39 /* Signing.local.xcconfig */,
 			);
 			path = Config;
 			sourceTree = "<group>";
 		};
-		385AD8C2530C4F946F2E21FB /* Superkey */ = {
+		7A3C087C301DBE76ED29766F /* Press59 */ = {
 			isa = PBXGroup;
 			children = (
-				468780D9CCA7E053C8C8B7E7 /* BindingStore.swift */,
-				291F54FC01ED6A5A5A72B502 /* HyperKeyMonitor.swift */,
-				BE2178B4D911E5BAA20033D4 /* Info.plist */,
-				7F16DACA82EF62D65F4BC85C /* SettingsView.swift */,
-				CB9C0E29F0EDA78D40C95F76 /* SuperkeyApp.swift */,
+				ED81F208484C5BC2D33C02E1 /* Assets.xcassets */,
+				CB11B70505DED90BC0F650AC /* BindingStore.swift */,
+				39E89B0E2BDD477B11BE1BA2 /* HyperKeyMonitor.swift */,
+				C93783A08346FDFA5BD884A2 /* Info.plist */,
+				7391306DABA6694662C1BE22 /* Press59App.swift */,
+				F5C4C99BFD5A74E322E6E5AD /* SettingsView.swift */,
 			);
-			path = Superkey;
+			path = Press59;
 			sourceTree = "<group>";
 		};
-		BA76452AFEFAC75AEE6BFA8B /* Products */ = {
+		D87120733B96E50A216BEB54 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				9EFCD989F6758DAC42F875C0 /* Superkey.app */,
+				49A64351C2CDC22E7C1AC21B /* Press59.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		D4C5B1E4C9B393B8C96C74B6 = {
+		E69201408029B2452F214E37 = {
 			isa = PBXGroup;
 			children = (
-				01B89A1D2911DC011558A9E3 /* Config */,
-				385AD8C2530C4F946F2E21FB /* Superkey */,
-				BA76452AFEFAC75AEE6BFA8B /* Products */,
+				2518F9E5EEF27452BB163B2E /* Config */,
+				7A3C087C301DBE76ED29766F /* Press59 */,
+				D87120733B96E50A216BEB54 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		6E07C27D0CCFCC4C0E4BA9EF /* Superkey */ = {
+		1EC8CB4202010758B5CD47AC /* Press59 */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D9FE735CFA3AC8E10DFA3486 /* Build configuration list for PBXNativeTarget "Superkey" */;
+			buildConfigurationList = 808C348781D28DD49F941D6B /* Build configuration list for PBXNativeTarget "Press59" */;
 			buildPhases = (
-				F7877010BA7911E32A67E30D /* Sources */,
+				D38EC0F39126F918B4F300C3 /* Sources */,
+				E0CA669D77F3E0879DB16BD6 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = Superkey;
+			name = Press59;
 			packageProductDependencies = (
 			);
-			productName = Superkey;
-			productReference = 9EFCD989F6758DAC42F875C0 /* Superkey.app */;
+			productName = Press59;
+			productReference = 49A64351C2CDC22E7C1AC21B /* Press59.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		E3B133030A26E807DE43BB90 /* Project object */ = {
+		3F0A863C6287E28A8264A41A /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
-					6E07C27D0CCFCC4C0E4BA9EF = {
+					1EC8CB4202010758B5CD47AC = {
 						DevelopmentTeam = CXM2VMSJV7;
 						ProvisioningStyle = Automatic;
 					};
 				};
 			};
-			buildConfigurationList = CA16A66510CFAFBA72A978C7 /* Build configuration list for PBXProject "Superkey" */;
+			buildConfigurationList = 7D3C3BC25C567153D995F827 /* Build configuration list for PBXProject "Press59" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -104,33 +108,44 @@
 				Base,
 				en,
 			);
-			mainGroup = D4C5B1E4C9B393B8C96C74B6;
+			mainGroup = E69201408029B2452F214E37;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 54;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				6E07C27D0CCFCC4C0E4BA9EF /* Superkey */,
+				1EC8CB4202010758B5CD47AC /* Press59 */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		E0CA669D77F3E0879DB16BD6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BC7D6415106F58D6D8FE5A1D /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
-		F7877010BA7911E32A67E30D /* Sources */ = {
+		D38EC0F39126F918B4F300C3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				661A20F8E49489FE0C83247E /* BindingStore.swift in Sources */,
-				85B6A1F058773BC427057583 /* HyperKeyMonitor.swift in Sources */,
-				7868A87ED0B80E114E331898 /* SettingsView.swift in Sources */,
-				C955AB3FDEBB63B9A853DF6F /* SuperkeyApp.swift in Sources */,
+				823B08889194C79725B97F30 /* BindingStore.swift in Sources */,
+				BCBBAB82067B35FD27EB892B /* HyperKeyMonitor.swift in Sources */,
+				7FE78F866A6BF6BE6C8403D5 /* Press59App.swift in Sources */,
+				AE11D6801FFC4997EFE9E187 /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		6429ACA8FEA87EF31CCF353D /* Debug */ = {
+		0BD2C85A75FACD6339B3A32F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -193,7 +208,55 @@
 			};
 			name = Debug;
 		};
-		DA2851235551CA51A3C76AB6 /* Release */ = {
+		A2DB017CB49872715F76604C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 249C890CD7884FA344BBAE39 /* Signing.local.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Press59/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = win.press59.app;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		AD7546B70A0FA77525E7F35F /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 249C890CD7884FA344BBAE39 /* Signing.local.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Press59/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = win.press59.app;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		BE76844AFE7CAEFC6B30B4A6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -249,76 +312,28 @@
 			};
 			name = Release;
 		};
-		E01B6079633E366451C406B0 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = DCF34B55C8D0AE0A6E34A30C /* Signing.local.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_HARDENED_RUNTIME = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Superkey/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = today.ididwork.superkey;
-				SDKROOT = macosx;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		FBBA9144976FF60CAA58B94D /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = DCF34B55C8D0AE0A6E34A30C /* Signing.local.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_HARDENED_RUNTIME = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Superkey/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = today.ididwork.superkey;
-				SDKROOT = macosx;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		CA16A66510CFAFBA72A978C7 /* Build configuration list for PBXProject "Superkey" */ = {
+		7D3C3BC25C567153D995F827 /* Build configuration list for PBXProject "Press59" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				6429ACA8FEA87EF31CCF353D /* Debug */,
-				DA2851235551CA51A3C76AB6 /* Release */,
+				0BD2C85A75FACD6339B3A32F /* Debug */,
+				BE76844AFE7CAEFC6B30B4A6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		D9FE735CFA3AC8E10DFA3486 /* Build configuration list for PBXNativeTarget "Superkey" */ = {
+		808C348781D28DD49F941D6B /* Build configuration list for PBXNativeTarget "Press59" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				E01B6079633E366451C406B0 /* Debug */,
-				FBBA9144976FF60CAA58B94D /* Release */,
+				A2DB017CB49872715F76604C /* Debug */,
+				AD7546B70A0FA77525E7F35F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = E3B133030A26E807DE43BB90 /* Project object */;
+	rootObject = 3F0A863C6287E28A8264A41A /* Project object */;
 }

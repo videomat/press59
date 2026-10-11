@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Press59 — Caps Lock app launcher for Mac</title>
+<meta name="description" content="Hold Caps Lock, press a letter, and the app is in front. Press59 turns Caps Lock into a launcher for every app you use.">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta property="og:title" content="Press59 — Caps Lock app launcher for Mac">
+<meta property="og:description" content="Hold Caps Lock. Press C. You’re in Chrome.">
+<meta property="og:image" content="https://press59.win/assets/icon-512.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="wrap header">
+  <a href="#top" class="brand">
+    <img src="assets/icon-512.png" alt="" width="44" height="44">
+    <span>Press59</span>
+  </a>
+  <nav aria-label="Main" class="nav">
+    <a href="#how">How it works</a>
+    <a href="#features">Features</a>
+    <a href="#faq">FAQ</a>
+    <a href="#download" class="pill pill-dark">Download</a>
+  </nav>
+</header>
+
+<main>
+  <section id="top" class="wrap hero">
+    <p class="eyebrow">A launcher for macOS that lives in Caps Lock</p>
+    <h1>Hold Caps Lock. Press&nbsp;C. You’re in Chrome.</h1>
+    <p class="lead">Press59 turns the key you never use into a shortcut to every app you do. One letter per app. Press it again to hide. Tap Caps Lock on its own and it still types capitals.</p>
+    <div class="cta-row">
+      <a href="#download" class="pill pill-accent">
+        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12"/><path d="M6 10l6 6 6-6"/><path d="M4 20h16"/></svg>
+        Download for Mac
+      </a>
+      <span class="muted">macOS 14 Sonoma or later · [YOUR PRICE]</span>
+    </div>
+
+    <div class="combo" role="img" aria-label="Caps Lock plus C opens Chrome">
+      <div class="cap cap-accent cap-caps"><span>⇪</span><span class="caps-label">caps lock</span></div>
+      <span class="plus">+</span>
+      <div class="cap cap-letter">C</div>
+      <svg aria-hidden="true" width="56" height="24" viewBox="0 0 56 24" fill="none" stroke="#8A8C92" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h50"/><path d="M42 4l10 8-10 8"/></svg>
+      <div class="window">
+        <div class="window-bar">
+          <span class="dot" style="background:#E2635B"></span>
+          <span class="dot" style="background:#E9B949"></span>
+          <span class="dot" style="background:#5BBE6B"></span>
+          <span class="window-title">Chrome</span>
+        </div>
+        <div class="window-body">in front, in under a blink</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="dark">
+    <div class="wrap section">
+      <h2>Three moves. No windows, no search box.</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="cap cap-accent step-cap step-cap-wide">⇪ hold</div>
+          <h3>Hold Caps Lock</h3>
+          <p>While it’s down, Caps Lock is your Hyper key — a modifier no other app is using.</p>
+        </div>
+        <div class="step">
+          <div class="cap cap-dark step-cap">S</div>
+          <h3>Press a letter</h3>
+          <p>Each app gets one key. S for Slack, F for Finder, T for Terminal — whatever your hands remember.</p>
+        </div>
+        <div class="step">
+          <div class="step-window">
+            <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg>
+          </div>
+          <h3>It’s in front</h3>
+          <p>Opens it if it isn’t running, brings it forward if it is. Same keys again and it hides.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="keys" class="wrap section">
+    <div class="section-head">
+      <h2>Your keyboard, mapped to your day.</h2>
+      <p class="lead">Pick a key, pick an app. Try it — click a key.</p>
+    </div>
+    <div class="keyboard" id="keyboard"></div>
+    <div class="readout" aria-live="polite">
+      <span class="cap cap-accent readout-cap">⇪</span>
+      <span class="plus-sm">+</span>
+      <span class="cap readout-letter" id="readout-letter">C</span>
+      <span class="plus-sm">→</span>
+      <span class="readout-app" id="readout-app">Chrome</span>
+    </div>
+  </section>
+
+  <section id="features" class="wrap section">
+    <h2>Small app. Does one thing all day.</h2>
+    <div class="features">
+      <div class="feature"><h3>Caps Lock still works</h3><p>A quick tap on its own toggles capitals, light and all. Hold it, and it’s Hyper.</p></div>
+      <div class="feature"><h3>Hyper for everything else</h3><p>Unassigned keys go out as <span class="mono">⌃⌥⇧⌘</span> + key, so your other apps get a clean modifier for their own shortcuts.</p></div>
+      <div class="feature"><h3>Press again to hide</h3><p>Already looking at it? The same shortcut tucks it away. Turn it off if you prefer.</p></div>
+      <div class="feature"><h3>Nothing leaks through</h3><p>Shortcuts are caught before any app sees them. No stray “c” typed into your doc.</p></div>
+      <div class="feature"><h3>Lives in the menu bar</h3><p>No Dock icon, no window. Starts at login and stays out of the way.</p></div>
+      <div class="feature"><h3>Native and tiny</h3><p>Written in Swift with system controls. No account, no sync, no analytics.</p></div>
+    </div>
+  </section>
+
+  <section id="faq" class="faq-band">
+    <div class="wrap-narrow section">
+      <h2>Questions</h2>
+      <div class="faq">
+        <details open>
+          <summary>Does it break Caps Lock?</summary>
+          <p>No. Tap Caps Lock quickly on its own and capitals toggle as always. It only becomes Hyper while you hold it and press another key.</p>
+        </details>
+        <details>
+          <summary>Why does it need Accessibility access?</summary>
+          <p>To catch a shortcut before the app you’re typing in sees it — that’s what keeps a stray letter from being typed. Press59 never records or sends what you type.</p>
+        </details>
+        <details>
+          <summary>Why isn’t it on the Mac App Store?</summary>
+          <p>Apps that intercept keystrokes can’t run in the App Store sandbox, so Press59 is distributed directly from this site.</p>
+        </details>
+        <details>
+          <summary>Can I use it alongside Raycast or Alfred?</summary>
+          <p>Yes. Turn off any other Hyper key setting so only one app owns Caps Lock, then use Hyper shortcuts in those apps as usual.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section id="download" class="wrap download">
+    <img src="assets/icon-512.png" alt="Press59 app icon" width="128" height="128">
+    <h2>Give Caps Lock a job.</h2>
+    <p class="lead">Runs on Macs with macOS 14 Sonoma or later.</p>
+    <a href="[DOWNLOAD URL]" class="pill pill-dark pill-lg">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12"/><path d="M6 10l6 6 6-6"/><path d="M4 20h16"/></svg>
+      Download Press59
+    </a>
+    <span class="muted">[YOUR PRICE] · [VERSION] · [FILE SIZE]</span>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-row">
+    <span>© 2026 Press59 · press59.win</span>
+    <nav aria-label="Footer" class="footer-nav">
+      <a href="#faq">FAQ</a>
+      <a href="mailto:[YOUR EMAIL]">Contact</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="main.js"></script>
+</body>
+</html>

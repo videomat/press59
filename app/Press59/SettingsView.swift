@@ -16,8 +16,8 @@ struct SettingsView: View {
                             NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
                         }
                     } label: {
-                        Label("Superkey needs Accessibility access", systemImage: "exclamationmark.triangle.fill")
-                        Text("Allow Superkey in Privacy & Security › Accessibility to use Caps Lock as the Hyper key.")
+                        Label("Press59 needs Accessibility access", systemImage: "exclamationmark.triangle.fill")
+                        Text("Allow Press59 in Privacy & Security › Accessibility to use Caps Lock as the Hyper key.")
                     }
                 }
             }

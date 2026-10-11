@@ -1,29 +1,30 @@
-name: Superkey
+name: Press59
 options:
-  bundleIdPrefix: today.ididwork
+  bundleIdPrefix: win.press59
   deploymentTarget:
     macOS: "14.0"
 targets:
-  Superkey:
+  Press59:
     type: application
     platform: macOS
     deploymentTarget: "14.0"
     sources:
-      - path: Superkey
+      - path: Press59
     configFiles:
       Debug: Config/Signing.local.xcconfig
       Release: Config/Signing.local.xcconfig
     info:
-      path: Superkey/Info.plist
+      path: Press59/Info.plist
       properties:
-        CFBundleDisplayName: Superkey
+        CFBundleDisplayName: Press59
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSUIElement: true
         LSApplicationCategoryType: public.app-category.productivity
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: today.ididwork.superkey
+        PRODUCT_BUNDLE_IDENTIFIER: win.press59.app
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         MARKETING_VERSION: 0.1.0
         CURRENT_PROJECT_VERSION: 1
         SWIFT_VERSION: "5.0"
