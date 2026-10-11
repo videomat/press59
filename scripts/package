@@ -77,11 +77,6 @@ if [[ -n "$(git status --porcelain)" ]]; then
     exit 1
 fi
 
-if [[ ! -f "$app_directory/Distribution/dmg-background.tiff" ]]; then
-    print "Missing the DMG background. Render it with: swift scripts/render-dmg-background.swift"
-    exit 1
-fi
-
 if [[ ! -f "$app_directory/Config/Signing.local.xcconfig" ]]; then
     print "Missing $app_directory/Config/Signing.local.xcconfig with DEVELOPMENT_TEAM."
     exit 1
@@ -176,11 +171,9 @@ mkdir -p "$dmg_source"
 ditto "$app_path" "$dmg_source/Press59.app"
 create-dmg \
     --volname "Press59" \
-    --background "$app_directory/Distribution/dmg-background.tiff" \
     --window-pos 200 120 \
     --window-size 560 340 \
     --icon-size 112 \
-    --text-size 12 \
     --icon "Press59.app" 150 160 \
     --hide-extension "Press59.app" \
     --app-drop-link 410 160 \
