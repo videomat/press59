@@ -59,6 +59,8 @@ p { margin: 0; }
 .combo { margin-top: 32px; width: 100%; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 .cap-caps { width: 200px; height: 88px; justify-content: space-between; padding: 0 20px; font-size: 18px; }
 .caps-label { font-size: 14px; letter-spacing: 0.04em; }
+/* ⇪ is missing from the mono font, so it falls back small; draw it in the system font at a larger size. */
+.caps-symbol { font-family: system-ui, -apple-system, sans-serif; font-size: 30px; font-weight: 600; line-height: 1; }
 .cap-letter { width: 88px; height: 88px; font-size: 36px; }
 .plus { font-size: 40px; font-weight: 300; color: var(--faint); }
 .window { flex: 1 1 320px; min-width: 0; max-width: 520px; background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: 0 24px 48px -24px rgba(20, 21, 24, 0.35); }
@@ -74,7 +76,8 @@ p { margin: 0; }
 .step h3 { font-size: 26px; }
 .step p { font-size: 17px; line-height: 1.55; color: #B9BBC1; }
 .step-cap { width: 64px; height: 64px; font-size: 26px; }
-.step-cap-wide { width: 120px; font-size: 16px; color: var(--ink); }
+.step-cap-wide { width: 132px; gap: 8px; font-size: 16px; color: var(--ink); }
+.step-cap-wide .caps-symbol { font-size: 24px; }
 .step-window { width: 64px; height: 64px; border-radius: 14px; background: var(--ground); color: var(--ink); display: flex; align-items: center; justify-content: center; }
 
 /* Keyboard */
@@ -88,10 +91,12 @@ p { margin: 0; }
 .key.unassigned .key-app { color: var(--faint); }
 .key[aria-pressed="true"] .key-app { color: var(--ink); }
 .readout { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 24px 28px; background: #fff; border: 1px solid var(--line); border-radius: 16px; }
-.readout-cap { height: 48px; padding: 0 16px; font-size: 15px; box-shadow: 0 3px 0 var(--accent-dark); }
-.readout-letter { width: 48px; height: 48px; font-size: 20px; box-shadow: 0 3px 0 var(--cap-shadow); }
-.plus-sm { font-size: 24px; color: var(--faint); }
-.readout-app { font-size: 22px; font-weight: 800; }
+.readout-cap { width: 160px; height: 72px; padding: 0 18px; }
+.readout-cap .caps-symbol { font-size: 26px; }
+.readout-cap .caps-label { font-size: 13px; }
+.readout-letter { width: 72px; height: 72px; font-size: 30px; }
+.plus-sm { font-size: 32px; font-weight: 300; color: var(--faint); }
+.readout-app { font-size: 28px; font-weight: 800; }
 
 /* Features */
 #features.section { padding-top: 32px; }
