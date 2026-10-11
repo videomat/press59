@@ -18,6 +18,12 @@ final class HyperKeyMonitor: ObservableObject {
     private static let f18KeyCode: Int64 = 0x4F
     private static let hyperFlags: CGEventFlags = [.maskCommand, .maskControl, .maskAlternate, .maskShift]
 
+    /// Hyper + this key opens Settings, so they're reachable when macOS hides the menu bar icon.
+    static let settingsKey = ","
+
+    /// Called when Hyper + `settingsKey` is pressed.
+    var onOpenSettings: (() -> Void)?
+
     private let store: BindingStore
     private var tap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
@@ -162,7 +168,14 @@ final class HyperKeyMonitor: ObservableObject {
         guard isHyperDown else { return Unmanaged.passUnretained(event) }
         wasHyperUsed = true
 
-        if let key = character(of: event), let binding = store.binding(for: key) {
+        let key = character(of: event)
+        if key == Self.settingsKey {
+            if isKeyDown && !isRepeat {
+                onOpenSettings?()
+            }
+            return nil
+        }
+        if let key, let binding = store.binding(for: key) {
             if isKeyDown && !isRepeat {
                 toggle(binding.appURL)
             }

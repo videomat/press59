@@ -3,14 +3,40 @@ import SwiftUI
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let store = BindingStore()
     lazy var monitor = HyperKeyMonitor(store: store)
+    private var settingsWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        monitor.onOpenSettings = { [weak self] in self?.showSettings() }
         monitor.start()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         // Give Caps Lock back to the system when quitting.
         monitor.stop()
+    }
+
+    /// Opening Press59 again while it's running (Spotlight, Finder, a launcher) shows Settings,
+    /// since macOS may hide the menu bar icon when the menu bar is crowded.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        showSettings()
+        return false
+    }
+
+    /// Settings live in an AppKit-owned window so they can be opened from anywhere,
+    /// not only from a SwiftUI view.
+    func showSettings() {
+        if settingsWindow == nil {
+            let window = NSWindow(contentViewController: NSHostingController(
+                rootView: SettingsView(store: store, monitor: monitor)
+            ))
+            window.title = "Press59 Settings"
+            window.styleMask = [.titled, .closable]
+            window.isReleasedWhenClosed = false
+            window.center()
+            settingsWindow = window
+        }
+        NSApp.activate(ignoringOtherApps: true)
+        settingsWindow?.makeKeyAndOrderFront(nil)
     }
 }
 
@@ -20,14 +46,10 @@ struct Press59App: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuContent(store: appDelegate.store, monitor: appDelegate.monitor)
+            MenuContent(store: appDelegate.store, monitor: appDelegate.monitor, showSettings: appDelegate.showSettings)
         } label: {
             Image("MenuBarIcon")
                 .accessibilityLabel("Press59")
-        }
-
-        Settings {
-            SettingsView(store: appDelegate.store, monitor: appDelegate.monitor)
         }
     }
 }
@@ -35,7 +57,7 @@ struct Press59App: App {
 private struct MenuContent: View {
     @ObservedObject var store: BindingStore
     @ObservedObject var monitor: HyperKeyMonitor
-    @Environment(\.openSettings) private var openSettings
+    let showSettings: () -> Void
 
     var body: some View {
         if !monitor.isTrusted {
@@ -48,11 +70,8 @@ private struct MenuContent: View {
         if !store.bindings.isEmpty {
             Divider()
         }
-        Button("Settings…") {
-            NSApp.activate(ignoringOtherApps: true)
-            openSettings()
-        }
-        .keyboardShortcut(",")
+        Button("Settings…", action: showSettings)
+            .keyboardShortcut(",")
         Button("Quit Press59") {
             NSApp.terminate(nil)
         }
