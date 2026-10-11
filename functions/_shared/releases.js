@@ -1,4 +1,4 @@
-// Reads the release manifest that scripts/publish uploads to R2 (bound as RELEASES).
+// Reads the release manifest that scripts/release uploads to R2 (bound as RELEASES).
 
 const MANIFEST_KEY = 'latest.json';
 

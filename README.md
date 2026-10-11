@@ -46,13 +46,13 @@ Releases live in the R2 bucket `press59-releases`:
 - `releases/Press59-<version>.dmg`, one file per release
 - `latest.json`, the current release: version, build, file, size, SHA-256 and publish date
 
-The site reads that bucket directly: `press59.win/download` streams the DMG that `latest.json` points to, and `press59.win/latest.json` gives the homepage the version and size it shows under the download buttons. Publishing a release updates the site without redeploying it.
+The site reads that bucket directly: `press59.win/download` streams the DMG that `latest.json` points to, and `press59.win/latest.json` gives the homepage the version and size it shows under the download buttons. Releasing a version updates the site without redeploying it.
 
 ### One-time setup
 
 ```bash
 npx wrangler@4 r2 bucket create press59-releases
-./scripts/release setup-notary
+./scripts/package setup-notary
 brew install create-dmg
 ```
 
@@ -60,25 +60,25 @@ You also need a Developer ID Application certificate in your Keychain and `DEVEL
 
 ### Each release
 
-Releasing is two steps with a test in between. On a clean `main`:
+Releasing is two steps with a test in between: package, test, release. On a clean `main`:
 
 ```bash
 ./scripts/version patch
 git commit -am "Release version $(awk '/MARKETING_VERSION:/ { print $2; exit }' app/project.yml)"
-./scripts/release
+./scripts/package
 ```
 
-`release` builds a universal Release archive, signs it with Developer ID, notarizes and staples the app and the DMG, and writes `build/release/Press59-<version>.dmg` and `latest.json`. Nothing is uploaded or tagged.
+`package` builds a universal Release archive, signs it with Developer ID, notarizes and staples the app and the DMG, and writes `build/release/Press59-<version>.dmg` and `latest.json`. Nothing is uploaded or tagged.
 
 Test that DMG: install it, grant Accessibility, and try your shortcuts. If it's good:
 
 ```bash
-./scripts/publish
+./scripts/release
 ```
 
-`publish` checks the DMG is the unchanged file `release` built from the current commit, uploads it and then `latest.json` to R2, tags `v<version>`, and pushes `main` and the tag when there's a remote. The site switches to the new version as soon as `latest.json` is uploaded.
+`release` checks the DMG is the unchanged file `package` built from the current commit, uploads it and then `latest.json` to R2, tags `v<version>`, and pushes `main` and the tag when there's a remote. The site switches to the new version as soon as `latest.json` is uploaded.
 
-If testing finds a problem, fix it, bump the version again, and run `release` for a new candidate.
+If testing finds a problem, fix it, bump the version again, and run `package` for a new candidate.
 
 ## Icon
 
