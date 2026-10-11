@@ -18,11 +18,13 @@ Signing settings live in `app/Config/Signing.local.xcconfig` (gitignored, needs 
 
 ## Website
 
-Open `web/index.html` in a browser, or serve the folder:
+Run the local dev server, then open http://localhost:8059:
 
 ```bash
-python3 -m http.server -d web 8059
+./scripts/web
 ```
+
+Pass a port to use another one (`./scripts/web 3000`). It's a plain static server, so refresh the page after editing.
 
 ## Icon
 

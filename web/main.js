@@ -1,8 +1,8 @@
 // Interactive keyboard demo: click a key to see which app ⇪ + key opens.
 const apps = {
-  c: 'Chrome', s: 'Slack', f: 'Finder', t: 'Terminal', n: 'Notes', m: 'Mail',
+  c: 'Chrome', s: 'Slack', f: 'Figma', t: 'Terminal', n: 'Notes', m: 'Mail',
   x: 'Xcode', z: 'Zoom', w: 'WhatsApp', p: 'Photos', l: 'Linear', a: 'Arc',
-  g: 'Figma', o: 'Obsidian', k: 'Calendar',
+  g: 'GarageBand', o: 'Obsidian', k: 'Keynote',
 };
 const rows = [
   { keys: 'qwertyuiop', indent: 0 },

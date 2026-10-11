@@ -84,7 +84,7 @@ p { margin: 0; }
 .key.unassigned { background: #ECEBE7; }
 .key[aria-pressed="true"] { background: var(--accent); border-color: var(--accent-dark); box-shadow: 0 4px 0 var(--accent-dark); }
 .key:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--cap-shadow); }
-.key-app { font-family: var(--display); font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px; }
+.key-app { font-family: var(--display); font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70px; letter-spacing: -0.02em; }
 .key.unassigned .key-app { color: var(--faint); }
 .key[aria-pressed="true"] .key-app { color: var(--ink); }
 .readout { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 24px 28px; background: #fff; border: 1px solid var(--line); border-radius: 16px; }

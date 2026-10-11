@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "./scripts/web",
+      "runtimeArgs": ["8059"],
+      "port": 8059
+    }
+  ]
+}
