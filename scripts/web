@@ -1,11 +1,21 @@
 #!/usr/bin/env bash
-# Serves the homepage locally at http://localhost:8059 (or the port given as $1).
+# Runs the homepage locally at http://localhost:8059 (or the port given as $1), with the
+# /download and /latest.json functions backed by a local R2 seeded from dev/.
 # Usage: ./scripts/web [port]
 
 set -euo pipefail
 
-port="${1:-8059}"
-web_dir="$(cd "$(dirname "$0")/../web" && pwd)"
+cd "$(dirname "$0")/.."
 
-echo "Serving $web_dir at http://localhost:$port (Ctrl+C to stop)"
-exec python3 -m http.server "$port" --bind 127.0.0.1 --directory "$web_dir"
+port="${1:-8059}"
+wrangler() {
+  npx --yes wrangler@4 "$@"
+}
+
+echo "Seeding the local R2 bucket with the sample release in dev/..."
+wrangler r2 object put press59-releases/latest.json \
+  --file dev/latest.json --content-type application/json --local >/dev/null
+wrangler r2 object put press59-releases/releases/Press59-dev.dmg \
+  --file dev/Press59-dev.dmg --content-type application/x-apple-diskimage --local >/dev/null
+
+exec npx --yes wrangler@4 pages dev web --port "$port" --ip 127.0.0.1

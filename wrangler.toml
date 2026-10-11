@@ -1,0 +1,11 @@
+# Cloudflare Pages project for the press59.win homepage.
+# The site is static, so there is no build step: Pages serves web/ as-is.
+# functions/ adds /download and /latest.json, which read releases from R2.
+name = "press59"
+pages_build_output_dir = "web"
+compatibility_date = "2026-10-01"
+
+# Release DMGs and latest.json, uploaded by scripts/deploy-app.
+[[r2_buckets]]
+binding = "RELEASES"
+bucket_name = "press59-releases"

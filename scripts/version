@@ -1,0 +1,60 @@
+#!/bin/zsh
+# Bumps the app's marketing version and build number in both app/project.yml and the Xcode project.
+
+project_root="${0:A:h:h}"
+cd "$project_root/app"
+
+set -euo pipefail
+
+project_file="Press59.xcodeproj/project.pbxproj"
+project_yaml="project.yml"
+
+usage() {
+    print "Usage: ./scripts/version <build|major|minor|patch>"
+    print "       ./scripts/version bump <marketing-version>"
+}
+
+current_version="$(awk -F ' = ' '/MARKETING_VERSION = / { gsub(/;/, "", $2); print $2; exit }' "$project_file")"
+if [[ -z "$current_version" ]]; then
+    print "Unable to read the current marketing version."
+    exit 1
+fi
+
+if [[ $# -eq 1 && "$1" =~ ^(build|major|minor|patch)$ ]]; then
+    version_parts=(${(s:.:)current_version})
+    major="${version_parts[1]}"
+    minor="${version_parts[2]:-0}"
+    patch="${version_parts[3]:-0}"
+
+    case "$1" in
+        build) marketing_version="$current_version" ;;
+        major) marketing_version="$((major + 1)).0.0" ;;
+        minor) marketing_version="$major.$((minor + 1)).0" ;;
+        patch) marketing_version="$major.$minor.$((patch + 1))" ;;
+    esac
+elif [[ $# -eq 2 && "$1" == "bump" ]]; then
+    marketing_version="$2"
+else
+    usage
+    exit 1
+fi
+
+if [[ ! "$marketing_version" =~ ^[0-9]+(\.[0-9]+){1,2}$ ]]; then
+    print "Marketing version must look like 0.2 or 0.2.0."
+    exit 1
+fi
+
+current_build="$(awk -F ' = ' '/CURRENT_PROJECT_VERSION = / { gsub(/;/, "", $2); print $2; exit }' "$project_file")"
+if [[ ! "$current_build" =~ ^[0-9]+$ ]]; then
+    print "Unable to read the current build number."
+    exit 1
+fi
+
+next_build="$((current_build + 1))"
+/usr/bin/perl -0pi -e "s/(MARKETING_VERSION = )[^;]+;/\${1}${marketing_version};/g; s/(CURRENT_PROJECT_VERSION = )[0-9]+;/\${1}${next_build};/g" "$project_file"
+
+# Keep the XcodeGen source synchronized with the generated Xcode project.
+/usr/bin/perl -0pi -e "s/(MARKETING_VERSION:\s*)[^\n]+/\${1}${marketing_version}/; s/(CURRENT_PROJECT_VERSION:\s*)[^\n]+/\${1}${next_build}/" "$project_yaml"
+
+print "Marketing version: $current_version -> $marketing_version"
+print "Build number: $current_build -> $next_build"

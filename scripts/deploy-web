@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Deploys the homepage in web/ to Cloudflare Pages (project "press59", see wrangler.toml).
+# Usage: ./scripts/deploy-web            # production
+#        ./scripts/deploy-web preview    # preview URL, production untouched
+
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+branch="main"
+if [[ "${1:-}" == "preview" ]]; then
+  branch="preview"
+fi
+
+exec npx --yes wrangler@4 pages deploy web --project-name press59 --branch "$branch"

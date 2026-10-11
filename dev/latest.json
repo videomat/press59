@@ -1,0 +1,9 @@
+{
+  "version" : "0.1.0",
+  "build" : "1",
+  "key" : "releases/Press59-dev.dmg",
+  "filename" : "Press59-dev.dmg",
+  "size" : 3412000,
+  "sha256" : "local-development-sample",
+  "publishedAt" : "2026-10-11T12:00:00Z"
+}

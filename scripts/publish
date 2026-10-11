@@ -1,0 +1,138 @@
+#!/bin/zsh
+# Publishes the release candidate from ./scripts/release: verifies it's the exact DMG that was built,
+# uploads it and latest.json to R2 (which switches press59.win/download to it), then tags the release.
+
+project_root="${0:A:h:h}"
+cd "$project_root"
+
+set -euo pipefail
+
+bucket="press59-releases"
+project_yaml="app/project.yml"
+release_directory="$project_root/build/release"
+manifest_path="$release_directory/latest.json"
+commit_path="$release_directory/commit"
+assume_yes=false
+
+usage() {
+    print "Usage: ./scripts/publish [--yes]"
+    print
+    print "Uploads the release candidate in build/release to R2, then tags it v<version>."
+    print "--yes  Skip the confirmation."
+}
+
+wrangler() {
+    npx --yes wrangler@4 "$@"
+}
+
+if [[ $# -gt 1 ]]; then
+    usage
+    exit 1
+fi
+
+if [[ $# -eq 1 ]]; then
+    case "$1" in
+        --yes) assume_yes=true ;;
+        --help|-h) usage; exit 0 ;;
+        *) usage; exit 1 ;;
+    esac
+fi
+
+if ! command -v npx >/dev/null 2>&1; then
+    print "Node.js is required to upload the release with Wrangler."
+    exit 1
+fi
+
+if [[ "$(git branch --show-current)" != "main" ]]; then
+    print "Publishing must run on main."
+    exit 1
+fi
+
+if [[ -n "$(git status --porcelain)" ]]; then
+    print "Publishing requires a clean working tree."
+    exit 1
+fi
+
+version="$(awk -F ': ' '/MARKETING_VERSION:/ { print $2; exit }' "$project_yaml" | tr -d ' ')"
+tag="v${version}"
+release_filename="Press59-${version}.dmg"
+release_path="$release_directory/$release_filename"
+
+if [[ ! -f "$release_path" || ! -f "$manifest_path" || ! -f "$commit_path" ]]; then
+    print "No release candidate for $version in build/release."
+    print "Build one with ./scripts/release first."
+    exit 1
+fi
+
+if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+    print "$version is already published (tag $tag exists)."
+    exit 1
+fi
+
+built_commit="$(<"$commit_path")"
+if [[ "$built_commit" != "$(git rev-parse HEAD)" ]]; then
+    print "The release candidate was built from ${built_commit:0:7}, but main is at $(git rev-parse --short HEAD)."
+    print "Rebuild it with ./scripts/release so the tag matches what was built."
+    exit 1
+fi
+
+manifest_version="$(plutil -extract version raw "$manifest_path" 2>/dev/null || true)"
+manifest_filename="$(plutil -extract filename raw "$manifest_path" 2>/dev/null || true)"
+manifest_sha256="$(plutil -extract sha256 raw "$manifest_path" 2>/dev/null || true)"
+manifest_size="$(plutil -extract size raw "$manifest_path" 2>/dev/null || true)"
+if [[ "$manifest_version" != "$version" || "$manifest_filename" != "$release_filename" ]]; then
+    print "latest.json does not describe $release_filename."
+    exit 1
+fi
+
+print "Verifying $release_filename is the tested build..."
+if [[ "$(shasum -a 256 "$release_path" | awk '{ print $1 }')" != "$manifest_sha256" ]]; then
+    print "The DMG changed since ./scripts/release built it. Rebuild it before publishing."
+    exit 1
+fi
+xcrun stapler validate "$release_path"
+hdiutil verify "$release_path"
+
+size_mb="$(awk -v bytes="$manifest_size" 'BEGIN { printf "%.1f", bytes / 1000000 }')"
+print
+print "Ready to publish Press59 $version ($size_mb MB):"
+print "  Upload $release_filename to R2 as $bucket/releases/$release_filename"
+print "  Update $bucket/latest.json, which switches press59.win/download to $version"
+print "  Tag ${built_commit:0:7} as $tag"
+
+if [[ "$assume_yes" != true ]]; then
+    read "answer?Continue? [y/N] "
+    if [[ "$answer" != [yY] && "$answer" != [yY][eE][sS] ]]; then
+        print "Publishing cancelled."
+        exit 0
+    fi
+fi
+
+plutil -replace publishedAt -string "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$manifest_path"
+
+print "Uploading $release_filename..."
+wrangler r2 object put "$bucket/releases/$release_filename" \
+    --file "$release_path" \
+    --content-type "application/x-apple-diskimage" \
+    --remote
+
+# Upload the manifest last, so the site never points at a DMG that isn't there yet.
+print "Publishing latest.json..."
+wrangler r2 object put "$bucket/latest.json" \
+    --file "$manifest_path" \
+    --content-type "application/json" \
+    --cache-control "no-cache" \
+    --remote
+
+print "Tagging $tag..."
+git tag -a "$tag" -m "Press59 $version"
+
+if git remote get-url origin >/dev/null 2>&1; then
+    print "Pushing main and $tag..."
+    git push --atomic origin main "refs/tags/$tag"
+else
+    print "No origin remote; push main and $tag once the repo has one."
+fi
+
+print
+print "Published Press59 $version. press59.win/download now serves $release_filename."
