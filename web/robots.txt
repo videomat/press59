@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /download
+
+Sitemap: https://press59.win/sitemap.xml
