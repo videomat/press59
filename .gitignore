@@ -1,0 +1,6 @@
+Config/Signing.local.xcconfig
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+build/
+DerivedData/
+.DS_Store

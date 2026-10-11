@@ -1,0 +1,33 @@
+name: Superkey
+options:
+  bundleIdPrefix: today.ididwork
+  deploymentTarget:
+    macOS: "14.0"
+targets:
+  Superkey:
+    type: application
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Superkey
+    configFiles:
+      Debug: Config/Signing.local.xcconfig
+      Release: Config/Signing.local.xcconfig
+    info:
+      path: Superkey/Info.plist
+      properties:
+        CFBundleDisplayName: Superkey
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSUIElement: true
+        LSApplicationCategoryType: public.app-category.productivity
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: today.ididwork.superkey
+        MARKETING_VERSION: 0.1.0
+        CURRENT_PROJECT_VERSION: 1
+        SWIFT_VERSION: "5.0"
+        ENABLE_HARDENED_RUNTIME: YES
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: Apple Development
+        GENERATE_INFOPLIST_FILE: NO
