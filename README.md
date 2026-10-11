@@ -87,3 +87,9 @@ The logo is drawn in code. After changing it, regenerate the app icon set and th
 ```bash
 swift scripts/render-icon.swift
 ```
+
+The DMG install window's background is drawn the same way. After changing it, run:
+
+```bash
+swift scripts/render-dmg-background.swift
+```
