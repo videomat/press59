@@ -38,6 +38,8 @@ p { margin: 0; }
 .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
 .nav { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; font-size: 16px; font-weight: 500; }
 .nav a { text-decoration: none; }
+.icon-link { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: 0 -10px; border-radius: 999px; }
+.icon-link:hover { background: #E7E5E0; color: var(--ink); }
 
 /* Buttons */
 .pill { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 12px 20px; border-radius: 999px; font-weight: 700; text-decoration: none; }
