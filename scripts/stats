@@ -34,11 +34,17 @@ const queries = {
     GROUP BY day ORDER BY day DESC`,
   versions: `SELECT version, COUNT(*) AS downloads FROM downloads
     WHERE ${people} AND downloaded_at >= ${since(days)} GROUP BY version ORDER BY downloads DESC`,
-  countries: `SELECT COALESCE(country, '??') AS country, COUNT(*) AS downloads FROM downloads
-    WHERE ${people} AND downloaded_at >= ${since(days)} GROUP BY country ORDER BY downloads DESC LIMIT 10`,
+  countries: `SELECT COALESCE(country, '??') AS country,
+      SUM(downloaded_at >= ${since(days)}) AS recent,
+      COUNT(*) AS allTime,
+      SUM(source = 'homepage') AS homepage,
+      SUM(source = 'direct') AS direct,
+      SUM(source = 'external') AS external
+    FROM downloads WHERE ${people} GROUP BY country ORDER BY allTime DESC, recent DESC LIMIT 15`,
   sources: `SELECT CASE WHEN source = 'external' THEN COALESCE(referrer_host, 'external') ELSE source END AS source,
-      COUNT(*) AS downloads FROM downloads
-    WHERE ${people} AND downloaded_at >= ${since(days)} GROUP BY 1 ORDER BY downloads DESC LIMIT 10`,
+      SUM(downloaded_at >= ${since(days)}) AS recent,
+      COUNT(*) AS allTime
+    FROM downloads WHERE ${people} GROUP BY 1 ORDER BY allTime DESC, recent DESC LIMIT 15`,
 };
 
 const names = Object.keys(queries);
@@ -57,17 +63,17 @@ try {
 const results = JSON.parse(output).map((statement) => statement.results);
 const data = Object.fromEntries(names.map((name, index) => [name, results[index] ?? []]));
 
-function table(title, rows, columns) {
+function table(title, rows, columns, headers) {
   console.log(`\n${title}`);
   if (rows.length === 0) {
     console.log('  (none yet)');
     return;
   }
-  const widths = columns.map((column) => Math.max(...rows.map((row) => String(row[column]).length)));
-  for (const row of rows) {
-    console.log('  ' + columns.map((column, i) => (
-      i === columns.length - 1 ? String(row[column]).padStart(widths[i]) : String(row[column]).padEnd(widths[i])
-    )).join('   '));
+  const cells = rows.map((row) => columns.map((column) => String(row[column] ?? 0)));
+  if (headers) cells.unshift(headers);
+  const widths = columns.map((_, i) => Math.max(...cells.map((row) => row[i].length)));
+  for (const row of cells) {
+    console.log('  ' + row.map((cell, i) => (i === 0 ? cell.padEnd(widths[i]) : cell.padStart(widths[i]))).join('   '));
   }
 }
 
@@ -82,5 +88,6 @@ console.log(`  Filtered as bots (all time): ${data.bots[0]?.bots ?? 0}`);
 
 table('Last 14 days', data.daily, ['day', 'downloads']);
 table(`Versions (last ${days} days)`, data.versions, ['version', 'downloads']);
-table(`Countries (last ${days} days)`, data.countries, ['country', 'downloads']);
-table(`Sources (last ${days} days)`, data.sources, ['source', 'downloads']);
+table('Countries', data.countries, ['country', 'recent', 'allTime', 'homepage', 'direct', 'external'],
+  ['', `${days}d`, 'all', 'homepage', 'direct', 'external']);
+table('Sources', data.sources, ['source', 'recent', 'allTime'], ['', `${days}d`, 'all']);
