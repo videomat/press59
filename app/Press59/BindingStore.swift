@@ -11,8 +11,40 @@ struct AppBinding: Identifiable, Codable, Hashable {
             .replacingOccurrences(of: ".app", with: "")
     }
 
+    /// A small copy of the app's icon for the Settings list. See `AppIconCache`.
     var icon: NSImage {
-        NSWorkspace.shared.icon(forFile: appURL.path)
+        AppIconCache.icon(for: appURL)
+    }
+}
+
+/// App icons hold every size up to 1024 pt @2x (about 16 MB each once decoded), but Settings shows
+/// them at 20 pt. Each icon is shrunk once to that size and cached, so the large original is released.
+enum AppIconCache {
+    static let pointSize: CGFloat = 20
+    private static var icons: [URL: NSImage] = [:]
+
+    static func icon(for appURL: URL) -> NSImage {
+        if let icon = icons[appURL] { return icon }
+        let icon = thumbnail(of: NSWorkspace.shared.icon(forFile: appURL.path))
+        icons[appURL] = icon
+        return icon
+    }
+
+    private static func thumbnail(of source: NSImage) -> NSImage {
+        let size = NSSize(width: pointSize, height: pointSize)
+        let pixels = Int(pointSize * 2)
+        let thumbnail = NSImage(size: size)
+        guard let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: pixels, pixelsHigh: pixels,
+                                         bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                                         colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0) else { return source }
+        rep.size = size
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+        NSGraphicsContext.current?.imageInterpolation = .high
+        source.draw(in: NSRect(origin: .zero, size: size))
+        NSGraphicsContext.restoreGraphicsState()
+        thumbnail.addRepresentation(rep)
+        return thumbnail
     }
 }
 
