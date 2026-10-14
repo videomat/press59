@@ -13,24 +13,19 @@ final class HyperKeyMonitor: ObservableObject {
     @Published private(set) var isTrusted = AXIsProcessTrusted()
     @Published private(set) var isRunning = false
 
-    private static let capsLockUsage = "0x700000039"
-    private static let f18Usage = "0x70000006D"
     private static let f18KeyCode: Int64 = 0x4F
     private static let hyperFlags: CGEventFlags = [.maskCommand, .maskControl, .maskAlternate, .maskShift]
+    private static let hidutil = URL(fileURLWithPath: "/usr/bin/hidutil")
 
-    /// Hyper + this key opens Settings, so they're reachable when macOS hides the menu bar icon.
-    static let settingsKey = ","
-
-    /// Called when Hyper + `settingsKey` is pressed.
+    /// Called when Hyper + `HyperKeyState.settingsKey` is pressed, so Settings are reachable
+    /// when macOS hides the menu bar icon.
     var onOpenSettings: (() -> Void)?
 
     private let store: BindingStore
     private var tap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var trustTimer: Timer?
-    private var isHyperDown = false
-    /// Whether another key was pressed while Hyper was held, so releasing it isn't a quick tap.
-    private var wasHyperUsed = false
+    private var state = HyperKeyState()
 
     init(store: BindingStore) {
         self.store = store
@@ -59,7 +54,7 @@ final class HyperKeyMonitor: ObservableObject {
         }
         tap = nil
         runLoopSource = nil
-        isHyperDown = false
+        state.reset()
         if isRunning {
             setCapsLockRemapped(false)
         }
@@ -88,17 +83,35 @@ final class HyperKeyMonitor: ObservableObject {
 
     // MARK: - Caps Lock remapping
 
+    /// Adds or removes only Press59's Caps Lock → F18, keeping mappings set by other tools.
     private func setCapsLockRemapped(_ remapped: Bool) {
-        let mapping = remapped
-            ? #"{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":\#(Self.capsLockUsage),"HIDKeyboardModifierMappingDst":\#(Self.f18Usage)}]}"#
-            : #"{"UserKeyMapping":[]}"#
+        guard let current = KeyMappings.parse(runHidutil(["property", "--get", "UserKeyMapping"])) else {
+            // The current mappings can't be read, so they can't be preserved. Remapping still has to
+            // work, and removing must not leave Caps Lock stuck as F18, so fall back to Press59's own.
+            runHidutil(["property", "--set", KeyMappings.json(remapped ? [KeyMappings.capsLockToF18] : [])])
+            return
+        }
+        let updated = remapped ? KeyMappings.adding(to: current) : KeyMappings.removing(from: current)
+        guard updated != current else { return }
+        runHidutil(["property", "--set", KeyMappings.json(updated)])
+    }
+
+    @discardableResult
+    private func runHidutil(_ arguments: [String]) -> String {
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/hidutil")
-        process.arguments = ["property", "--set", mapping]
-        process.standardOutput = FileHandle.nullDevice
+        let output = Pipe()
+        process.executableURL = Self.hidutil
+        process.arguments = arguments
+        process.standardOutput = output
         process.standardError = FileHandle.nullDevice
-        try? process.run()
+        do {
+            try process.run()
+        } catch {
+            return ""
+        }
+        let data = output.fileHandleForReading.readDataToEndOfFile()
         process.waitUntilExit()
+        return String(decoding: data, as: UTF8.self)
     }
 
     /// Flips the system Caps Lock state (and its light), since the physical key now sends F18.
@@ -151,39 +164,31 @@ final class HyperKeyMonitor: ObservableObject {
             return Unmanaged.passUnretained(event)
         }
 
-        let isKeyDown = type == .keyDown
-        let isRepeat = event.getIntegerValueField(.keyboardEventAutorepeat) != 0
-        if event.getIntegerValueField(.keyboardEventKeycode) == Self.f18KeyCode {
-            if isKeyDown && !isRepeat {
-                isHyperDown = true
-                wasHyperUsed = false
-            } else if !isKeyDown {
-                isHyperDown = false
-                if !wasHyperUsed && store.quickTapTogglesCapsLock {
-                    toggleCapsLock()
-                }
-            }
-            return nil
-        }
-        guard isHyperDown else { return Unmanaged.passUnretained(event) }
-        wasHyperUsed = true
+        let keyEvent = HyperKeyEvent(
+            isDown: type == .keyDown,
+            isRepeat: event.getIntegerValueField(.keyboardEventAutorepeat) != 0,
+            isHyperKey: event.getIntegerValueField(.keyboardEventKeycode) == Self.f18KeyCode,
+            character: character(of: event)
+        )
+        let action = state.handle(
+            keyEvent,
+            quickTapTogglesCapsLock: store.quickTapTogglesCapsLock,
+            appForKey: { [store] in store.binding(for: $0)?.appURL }
+        )
 
-        let key = character(of: event)
-        if key == Self.settingsKey {
-            if isKeyDown && !isRepeat {
-                onOpenSettings?()
-            }
-            return nil
+        switch action {
+        case .passThrough, .swallow:
+            break
+        case .addHyperModifiers:
+            event.flags.formUnion(Self.hyperFlags)
+        case .toggleCapsLock:
+            toggleCapsLock()
+        case .openSettings:
+            onOpenSettings?()
+        case .openApp(let appURL):
+            toggle(appURL)
         }
-        if let key, let binding = store.binding(for: key) {
-            if isKeyDown && !isRepeat {
-                toggle(binding.appURL)
-            }
-            return nil
-        }
-
-        event.flags.formUnion(Self.hyperFlags)
-        return Unmanaged.passUnretained(event)
+        return action.passesEvent ? Unmanaged.passUnretained(event) : nil
     }
 
     private func character(of event: CGEvent) -> String? {

@@ -37,3 +37,39 @@ targets:
         Release:
           CODE_SIGN_STYLE: Manual
           CODE_SIGN_IDENTITY: Developer ID Application
+  Press59Tests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "14.0"
+    # Only the app's pure logic, so the tests never start Press59 or touch the keyboard.
+    sources:
+      - path: Press59Tests
+      - path: Press59/HyperKeyLogic.swift
+      - path: Press59/KeyMappings.swift
+    configFiles:
+      Debug: Config/Signing.local.xcconfig
+      Release: Config/Signing.local.xcconfig
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: win.press59.app.tests
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+schemes:
+  Press59:
+    build:
+      targets:
+        Press59: all
+        Press59Tests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - Press59Tests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
