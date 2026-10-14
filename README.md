@@ -33,12 +33,12 @@ Press59 has no account, no analytics and makes no network requests. It needs Acc
 
 ## How it works
 
-- At launch, Press59 uses macOS's `hidutil` to make the Caps Lock key send F18, a key no Mac keyboard has.
+- At launch, Press59 uses macOS's `hidutil` to make the Caps Lock key send F18, a key no Mac keyboard has. It adds this to any key remaps you already have rather than replacing them.
 - A keyboard event tap treats F18 as a modifier: while it's held, a letter with an app assigned opens that app and is swallowed; any other key is sent on with ⌃⌥⇧⌘ added.
 - Releasing F18 without pressing another key counts as a tap, and Press59 toggles Caps Lock through IOKit.
-- On quit, Press59 removes the mapping and Caps Lock behaves normally again. Removing it also clears any other `hidutil` key mappings.
+- On quit, Press59 removes only its own mapping, so Caps Lock behaves normally again and remaps from other tools stay in place.
 
-The core is in [`app/Press59/HyperKeyMonitor.swift`](app/Press59/HyperKeyMonitor.swift).
+The decisions are in [`HyperKeyLogic.swift`](app/Press59/HyperKeyLogic.swift), the remapping in [`KeyMappings.swift`](app/Press59/KeyMappings.swift), and the event tap in [`HyperKeyMonitor.swift`](app/Press59/HyperKeyMonitor.swift). Run the tests with ⌘U in Xcode.
 
 ## Building from source
 
