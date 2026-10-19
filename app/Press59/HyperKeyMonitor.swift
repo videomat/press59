@@ -34,10 +34,15 @@ final class HyperKeyMonitor: ObservableObject {
     func start() {
         guard !isRunning else { return }
         guard requestTrust() else {
-            waitForTrust()
+            retryStartLater()
             return
         }
-        guard installTap() else { return }
+        // The tap can fail even when trusted, e.g. for a moment right after Accessibility is
+        // granted, so keep trying instead of leaving Caps Lock unmapped until a relaunch.
+        guard installTap() else {
+            retryStartLater()
+            return
+        }
         setCapsLockRemapped(true)
         isRunning = true
     }
@@ -70,7 +75,8 @@ final class HyperKeyMonitor: ObservableObject {
         return isTrusted
     }
 
-    private func waitForTrust() {
+    /// Calls `start()` again every second, once the app is trusted.
+    private func retryStartLater() {
         trustTimer?.invalidate()
         trustTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] timer in
             guard let self, AXIsProcessTrusted() else { return }
