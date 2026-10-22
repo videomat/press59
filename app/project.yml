@@ -3,6 +3,10 @@ options:
   bundleIdPrefix: win.press59
   deploymentTarget:
     macOS: "14.0"
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.6.0
 targets:
   Press59:
     type: application
@@ -10,6 +14,8 @@ targets:
     deploymentTarget: "14.0"
     sources:
       - path: Press59
+    dependencies:
+      - package: Sparkle
     configFiles:
       Debug: Config/Signing.local.xcconfig
       Release: Config/Signing.local.xcconfig
@@ -21,6 +27,11 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSUIElement: true
         LSApplicationCategoryType: public.app-category.productivity
+        # Sparkle updates: the feed is built from the release in R2 (functions/appcast.xml.js),
+        # and only updates signed with the matching private key are installed.
+        SUFeedURL: https://press59.win/appcast.xml
+        SUPublicEDKey: GZsyOz9IVVdNHAylmqrrCU6XvMO/be6KhgZCFPDfodY=
+        SUEnableAutomaticChecks: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: win.press59.app

@@ -1,8 +1,13 @@
+import Sparkle
 import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let store = BindingStore()
     lazy var monitor = HyperKeyMonitor(store: store)
+    /// Checks press59.win/appcast.xml for new versions and installs them (Sparkle).
+    let updaterController = SPUStandardUpdaterController(
+        startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil
+    )
     private var settingsWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -27,7 +32,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func showSettings() {
         if settingsWindow == nil {
             let window = NSWindow(contentViewController: NSHostingController(
-                rootView: SettingsView(store: store, monitor: monitor)
+                rootView: SettingsView(store: store, monitor: monitor, updater: updaterController.updater)
             ))
             window.title = "Press59 Settings"
             window.styleMask = [.titled, .closable]
@@ -46,7 +51,12 @@ struct Press59App: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuContent(store: appDelegate.store, monitor: appDelegate.monitor, showSettings: appDelegate.showSettings)
+            MenuContent(
+                store: appDelegate.store,
+                monitor: appDelegate.monitor,
+                updater: appDelegate.updaterController.updater,
+                showSettings: appDelegate.showSettings
+            )
         } label: {
             Image("MenuBarIcon")
                 .accessibilityLabel("Press59")
@@ -57,6 +67,7 @@ struct Press59App: App {
 private struct MenuContent: View {
     @ObservedObject var store: BindingStore
     @ObservedObject var monitor: HyperKeyMonitor
+    let updater: SPUUpdater
     let showSettings: () -> Void
 
     var body: some View {
@@ -72,6 +83,11 @@ private struct MenuContent: View {
         }
         Button("Settings…", action: showSettings)
             .keyboardShortcut(",")
+        Button("Check for Updates…") {
+            // Sparkle's window opens behind other apps unless the menu bar app comes forward.
+            NSApp.activate(ignoringOtherApps: true)
+            updater.checkForUpdates()
+        }
         Button("Quit Press59") {
             NSApp.terminate(nil)
         }

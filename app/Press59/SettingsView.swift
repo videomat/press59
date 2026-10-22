@@ -1,11 +1,14 @@
 import ServiceManagement
+import Sparkle
 import SwiftUI
 import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @ObservedObject var store: BindingStore
     @ObservedObject var monitor: HyperKeyMonitor
+    let updater: SPUUpdater
     @State private var launchesAtLogin = SMAppService.mainApp.status == .enabled
+    @State private var checksForUpdates = false
 
     var body: some View {
         Form {
@@ -65,11 +68,24 @@ struct SettingsView: View {
                 }
                 Button("Add App…", action: chooseApp)
             }
+
+            Section {
+                Toggle("Check for updates automatically", isOn: $checksForUpdates)
+                    .onChange(of: checksForUpdates) { _, enabled in
+                        updater.automaticallyChecksForUpdates = enabled
+                    }
+                LabeledContent("Version \(Self.version)") {
+                    Button("Check Now") { updater.checkForUpdates() }
+                }
+            }
         }
         .formStyle(.grouped)
         .frame(width: 460)
         .frame(minHeight: 360)
+        .onAppear { checksForUpdates = updater.automaticallyChecksForUpdates }
     }
+
+    private static let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
 
     private func chooseApp() {
         let panel = NSOpenPanel()
