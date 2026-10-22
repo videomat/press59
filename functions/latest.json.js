@@ -1,4 +1,5 @@
 // GET /latest.json — the current release's public details, shown under the homepage download buttons.
+// The app's updater uses /appcast.xml instead.
 
 import { latestRelease, methodNotAllowed, unavailable } from './_shared/releases.js';
 

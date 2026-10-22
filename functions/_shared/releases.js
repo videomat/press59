@@ -34,6 +34,7 @@ export async function latestRelease(env) {
     filename: release.filename.trim(),
     size: Number.isFinite(release.size) ? release.size : null,
     sha256: release.sha256 ?? null,
+    edSignature: isNonEmptyString(release.edSignature) ? release.edSignature.trim() : null,
     publishedAt: release.publishedAt ?? null,
   };
 }

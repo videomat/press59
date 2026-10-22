@@ -6,6 +6,8 @@ const BOT_USER_AGENT = /bot|crawler|spider|slurp|preview|facebookexternalhit|hea
 const BROWSER_USER_AGENT = /chrome|chromium|firefox|safari|edg|opr\//i;
 
 function source(request) {
+  // The app's updater downloads /download/<filename>, the URL in /appcast.xml.
+  if (new URL(request.url).pathname.startsWith('/download/')) return { source: 'update', referrerHost: null };
   const referrer = request.headers.get('referer');
   if (!referrer) return { source: 'direct', referrerHost: null };
   try {

@@ -1,13 +1,23 @@
 // GET /download — streams the DMG that latest.json points to, straight from R2.
+// GET /download/<filename> (functions/download/[filename].js) does the same for the app's updater.
 
 import { recordDownload } from './_shared/analytics.js';
 import { latestRelease, methodNotAllowed, unavailable } from './_shared/releases.js';
 
-export async function onRequest({ request, env, waitUntil }) {
+export function onRequest(context) {
+  return serveRelease(context);
+}
+
+// Streams the current release. With `filename`, only if it's still that file, so an update
+// signed for one version is never served another version's DMG.
+export async function serveRelease({ request, env, waitUntil }, filename = null) {
   if (request.method !== 'GET' && request.method !== 'HEAD') return methodNotAllowed();
 
   const release = await latestRelease(env);
   if (release === null) return unavailable();
+  if (filename !== null && filename !== release.filename) {
+    return new Response('Not found', { status: 404, headers: { 'cache-control': 'no-store' } });
+  }
 
   const object = request.method === 'HEAD'
     ? await env.RELEASES.head(release.key)
