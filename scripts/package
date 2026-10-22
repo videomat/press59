@@ -188,6 +188,14 @@ xcrun stapler staple "$staged_dmg"
 xcrun stapler validate "$staged_dmg"
 hdiutil verify "$staged_dmg"
 
+# Sign the final DMG for Sparkle with the private key in the Keychain, so the app installs it as an update.
+print "Signing the disk image for app updates..."
+sign_update="$staging_root/DerivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
+if ! ed_signature="$("$sign_update" -p "$staged_dmg")"; then
+    print "Couldn't sign the update. The Sparkle private key must be in the Keychain (see MAINTAINING.md)."
+    exit 1
+fi
+
 /bin/rm -rf -- "$release_directory"
 mkdir -p "$release_directory"
 mv "$staged_dmg" "$release_path"
@@ -202,6 +210,7 @@ manifest_plist="$staging_root/latest.plist"
 /usr/bin/plutil -insert filename -string "$release_filename" "$manifest_plist"
 /usr/bin/plutil -insert size -integer "$size" "$manifest_plist"
 /usr/bin/plutil -insert sha256 -string "$sha256" "$manifest_plist"
+/usr/bin/plutil -insert edSignature -string "$ed_signature" "$manifest_plist"
 /usr/bin/plutil -convert json -r -o "$manifest_path" "$manifest_plist"
 
 # Remember which commit this candidate was built from, so release tags exactly that commit.

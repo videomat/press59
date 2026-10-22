@@ -6,7 +6,7 @@ Notes for building, releasing and running Press59's website and downloads. For w
 |---|---|
 | `app/` | The macOS menu bar app (SwiftUI, XcodeGen) |
 | `web/` | The press59.win homepage (static HTML, no build step) |
-| `functions/` | Cloudflare Pages functions: `/download` and `/latest.json` |
+| `functions/` | Cloudflare Pages functions: `/download`, `/latest.json` and `/appcast.xml` |
 | `migrations/` | D1 schema for the private download analytics |
 | `scripts/` | Version, release, website, analytics and icon tooling |
 | `dev/` | Sample release for the local website |
@@ -37,9 +37,23 @@ The first run asks you to sign in to Cloudflare (`npx wrangler@4 login`).
 Releases live in the R2 bucket `press59-releases`:
 
 - `releases/Press59-<version>.dmg`, one file per release
-- `latest.json`, the current release: version, build, file, size, SHA-256 and publish date
+- `latest.json`, the current release: version, build, file, size, SHA-256, update signature and publish date
 
 The site reads that bucket directly: `press59.win/download` streams the DMG that `latest.json` points to, and `press59.win/latest.json` gives the homepage the version and size it shows under the download buttons. Releasing a version updates the site without redeploying it.
+
+### App updates
+
+The app updates itself with [Sparkle](https://sparkle-project.org). It checks `press59.win/appcast.xml` once a day (and from **Check for Updates…** in the menu), which is built from `latest.json`, and downloads the DMG from `press59.win/download/Press59-<version>.dmg`. A release goes out to installed apps as soon as `latest.json` is uploaded.
+
+Sparkle only installs a DMG signed with the EdDSA private key whose public key is `SUPublicEDKey` in `app/project.yml`. `package` signs each DMG with the key in your login Keychain and stores the signature in `latest.json`. Sparkle updates only work from 0.1.2 on; anyone on 0.1.1 or older has to download the new version once by hand.
+
+**Back up the private key.** If it's lost, installed apps can never be updated again. Export it to a file and keep it somewhere safe (a password manager), never in the repo:
+
+```bash
+"$(find ~/Library/Developer/Xcode/DerivedData -path '*artifacts/sparkle/Sparkle/bin/generate_keys' -print -quit)" -x press59-sparkle-key.txt
+```
+
+On a new Mac, import it with `generate_keys -f press59-sparkle-key.txt`.
 
 ### One-time setup
 
@@ -48,6 +62,8 @@ npx wrangler@4 r2 bucket create press59-releases
 ./scripts/package setup-notary
 brew install create-dmg
 ```
+
+The first `package` asks the Keychain to let `sign_update` use the Sparkle key; choose **Always Allow**.
 
 You also need a Developer ID Application certificate in your Keychain and `DEVELOPMENT_TEAM` in `app/Config/Signing.local.xcconfig`. After creating the bucket, add the R2 binding to the Pages project (Settings › Bindings › R2 bucket, variable `RELEASES`, bucket `press59-releases`) if `wrangler.toml` isn't picked up.
 
@@ -83,7 +99,7 @@ Every download through `/download` is recorded in a private D1 database, `press5
 ./scripts/stats --local        # the local dev database
 ```
 
-Only whole-file downloads count; resumed (range) and HEAD requests don't. Likely bots are excluded from the numbers and shown as one total.
+Only whole-file downloads count; resumed (range) and HEAD requests don't. Downloads by the app's updater have the source `update`. Likely bots are excluded from the numbers and shown as one total.
 
 ### One-time setup
 
