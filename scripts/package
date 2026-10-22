@@ -17,6 +17,8 @@ export_options="$app_directory/Distribution/ExportOptions.plist"
 release_directory="$project_root/build/release"
 manifest_path="$release_directory/latest.json"
 commit_path="$release_directory/commit"
+sparkle_data="$project_root/build/sparkle"
+sign_update="$sparkle_data/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
 
 usage() {
     print "Usage: ./scripts/package"
@@ -129,6 +131,24 @@ notary_zip="$staging_root/Press59.zip"
 dmg_source="$staging_root/dmg"
 staged_dmg="$staging_root/$release_filename"
 
+# Sparkle's sign_update signs the DMG for app updates. Fetch it to a fixed path, so a Keychain
+# "Always Allow" for it lasts, and check the key now rather than after notarizing.
+print "Checking the Sparkle update signing key..."
+xcodebuild -resolvePackageDependencies \
+    -project "$project_bundle" \
+    -scheme Press59 \
+    -derivedDataPath "$sparkle_data" >/dev/null
+if [[ ! -x "$sign_update" ]]; then
+    print "Sparkle's sign_update wasn't found at $sign_update."
+    exit 1
+fi
+print "Press59 update signing check" > "$staging_root/signing-check"
+if ! "$sign_update" -p "$staging_root/signing-check" >/dev/null; then
+    print "Couldn't sign with the Sparkle private key. It must be in the login Keychain, and"
+    print "sign_update must be allowed to use it (see MAINTAINING.md)."
+    exit 1
+fi
+
 print "Creating release archive for $version ($build)..."
 xcodebuild archive \
     -project "$project_bundle" \
@@ -190,11 +210,7 @@ hdiutil verify "$staged_dmg"
 
 # Sign the final DMG for Sparkle with the private key in the Keychain, so the app installs it as an update.
 print "Signing the disk image for app updates..."
-sign_update="$staging_root/DerivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
-if ! ed_signature="$("$sign_update" -p "$staged_dmg")"; then
-    print "Couldn't sign the update. The Sparkle private key must be in the Keychain (see MAINTAINING.md)."
-    exit 1
-fi
+ed_signature="$("$sign_update" -p "$staged_dmg")"
 
 /bin/rm -rf -- "$release_directory"
 mkdir -p "$release_directory"
