@@ -26,6 +26,16 @@ struct SettingsView: View {
             }
 
             Section {
+                LabeledContent("Version \(Self.version)") {
+                    Button("Check Now") { updater.checkForUpdates() }
+                }
+                Toggle("Check for updates automatically", isOn: $checksForUpdates)
+                    .onChange(of: checksForUpdates) { _, enabled in
+                        updater.automaticallyChecksForUpdates = enabled
+                    }
+            }
+
+            Section {
                 Toggle("Launch at login", isOn: $launchesAtLogin)
                     .onChange(of: launchesAtLogin) { _, enabled in
                         setLaunchesAtLogin(enabled)
@@ -67,16 +77,6 @@ struct SettingsView: View {
                     }
                 }
                 Button("Add App…", action: chooseApp)
-            }
-
-            Section {
-                Toggle("Check for updates automatically", isOn: $checksForUpdates)
-                    .onChange(of: checksForUpdates) { _, enabled in
-                        updater.automaticallyChecksForUpdates = enabled
-                    }
-                LabeledContent("Version \(Self.version)") {
-                    Button("Check Now") { updater.checkForUpdates() }
-                }
             }
         }
         .formStyle(.grouped)
