@@ -35,8 +35,10 @@ enum HyperKeyAction: Equatable {
 /// - Hyper + an assigned key opens that app; Hyper + `settingsKey` opens Settings.
 /// - Hyper + any other key gets ⌃⌥⇧⌘.
 /// - Pressing and releasing Hyper with no other key in between is a quick tap.
+/// - Holding Hyper on its own for `cheatSheetDelay` shows the cheat sheet instead.
 struct HyperKeyState {
     static let settingsKey = ","
+    static let cheatSheetDelay: TimeInterval = 0.5
 
     private(set) var isHyperDown = false
     /// Whether another key was pressed while Hyper was held, so releasing it isn't a quick tap.
@@ -72,6 +74,14 @@ struct HyperKeyState {
             return acts ? .openApp(appURL) : .swallow
         }
         return .addHyperModifiers
+    }
+
+    /// Called when Hyper has been held for `cheatSheetDelay`. Returns whether to show the cheat sheet:
+    /// only while Hyper is still down on its own. Releasing it afterwards is then not a quick tap.
+    mutating func holdElapsed() -> Bool {
+        guard isHyperDown, !wasHyperUsed else { return false }
+        wasHyperUsed = true
+        return true
     }
 
     mutating func reset() {

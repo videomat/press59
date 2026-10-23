@@ -4,6 +4,7 @@ import SwiftUI
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let store = BindingStore()
     lazy var monitor = HyperKeyMonitor(store: store)
+    lazy var cheatSheet = CheatSheetController(store: store)
     /// Checks press59.win/appcast.xml for new versions and installs them (Sparkle).
     let updaterController = SPUStandardUpdaterController(
         startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil
@@ -12,6 +13,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         monitor.onOpenSettings = { [weak self] in self?.showSettings() }
+        monitor.onShowCheatSheet = { [weak self] in self?.cheatSheet.show() }
+        monitor.onHideCheatSheet = { [weak self] in self?.cheatSheet.hide() }
         monitor.start()
     }
 

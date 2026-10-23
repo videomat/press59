@@ -15,22 +15,33 @@ struct AppBinding: Identifiable, Codable, Hashable {
     var icon: NSImage {
         AppIconCache.icon(for: appURL)
     }
+
+    /// A larger copy for the cheat sheet.
+    var largeIcon: NSImage {
+        AppIconCache.icon(for: appURL, pointSize: 36)
+    }
 }
 
 /// App icons hold every size up to 1024 pt @2x (about 16 MB each once decoded), but Settings shows
-/// them at 20 pt. Each icon is shrunk once to that size and cached, so the large original is released.
+/// them at 20 pt and the cheat sheet at 36 pt. Each icon is shrunk once to the size shown and cached,
+/// so the large original is released.
 enum AppIconCache {
-    static let pointSize: CGFloat = 20
-    private static var icons: [URL: NSImage] = [:]
+    private struct Key: Hashable {
+        var appURL: URL
+        var pointSize: CGFloat
+    }
 
-    static func icon(for appURL: URL) -> NSImage {
-        if let icon = icons[appURL] { return icon }
-        let icon = thumbnail(of: NSWorkspace.shared.icon(forFile: appURL.path))
-        icons[appURL] = icon
+    private static var icons: [Key: NSImage] = [:]
+
+    static func icon(for appURL: URL, pointSize: CGFloat = 20) -> NSImage {
+        let key = Key(appURL: appURL, pointSize: pointSize)
+        if let icon = icons[key] { return icon }
+        let icon = thumbnail(of: NSWorkspace.shared.icon(forFile: appURL.path), pointSize: pointSize)
+        icons[key] = icon
         return icon
     }
 
-    private static func thumbnail(of source: NSImage) -> NSImage {
+    private static func thumbnail(of source: NSImage, pointSize: CGFloat) -> NSImage {
         let size = NSSize(width: pointSize, height: pointSize)
         let pixels = Int(pointSize * 2)
         let thumbnail = NSImage(size: size)
@@ -55,6 +66,7 @@ final class BindingStore: ObservableObject {
     private static let bindingsKey = "bindings"
     private static let hidesFrontmostAppKey = "hidesFrontmostApp"
     private static let quickTapTogglesCapsLockKey = "quickTapTogglesCapsLock"
+    private static let showsCheatSheetKey = "showsCheatSheet"
 
     @Published var bindings: [AppBinding] {
         didSet { saveBindings() }
@@ -68,6 +80,10 @@ final class BindingStore: ObservableObject {
         didSet { UserDefaults.standard.set(quickTapTogglesCapsLock, forKey: Self.quickTapTogglesCapsLockKey) }
     }
 
+    @Published var showsCheatSheet: Bool {
+        didSet { UserDefaults.standard.set(showsCheatSheet, forKey: Self.showsCheatSheetKey) }
+    }
+
     init() {
         let defaults = UserDefaults.standard
         if let data = defaults.data(forKey: Self.bindingsKey),
@@ -78,6 +94,7 @@ final class BindingStore: ObservableObject {
         }
         hidesFrontmostApp = defaults.object(forKey: Self.hidesFrontmostAppKey) as? Bool ?? true
         quickTapTogglesCapsLock = defaults.object(forKey: Self.quickTapTogglesCapsLockKey) as? Bool ?? true
+        showsCheatSheet = defaults.object(forKey: Self.showsCheatSheetKey) as? Bool ?? true
     }
 
     func binding(for key: String) -> AppBinding? {

@@ -18,6 +18,7 @@
 		BCBBAB82067B35FD27EB892B /* HyperKeyMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39E89B0E2BDD477B11BE1BA2 /* HyperKeyMonitor.swift */; };
 		C6F770F80490823345EEF73E /* KeyMappings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28EF5611067019B206CDDD85 /* KeyMappings.swift */; };
 		E2863A391368156561278C56 /* KeyMappingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D61CE2A3370F89816AD0529 /* KeyMappingsTests.swift */; };
+		E8E7CCBCFDE81AA7060FB829 /* CheatSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8642F1C28399C196A67CD3F7 /* CheatSheet.swift */; };
 		F59384C7B14FDF7CE93660B3 /* HyperKeyLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEC05C246DBECB2E13DD7B24 /* HyperKeyLogic.swift */; };
 /* End PBXBuildFile section */
 
@@ -29,6 +30,7 @@
 		5D61CE2A3370F89816AD0529 /* KeyMappingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyMappingsTests.swift; sourceTree = "<group>"; };
 		7391306DABA6694662C1BE22 /* Press59App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Press59App.swift; sourceTree = "<group>"; };
 		856909680C83B2AF4485DFB7 /* Press59Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Press59Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8642F1C28399C196A67CD3F7 /* CheatSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheatSheet.swift; sourceTree = "<group>"; };
 		B616285FEE5945D00CF958D6 /* HyperKeyLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HyperKeyLogicTests.swift; sourceTree = "<group>"; };
 		BEC05C246DBECB2E13DD7B24 /* HyperKeyLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HyperKeyLogic.swift; sourceTree = "<group>"; };
 		C93783A08346FDFA5BD884A2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -71,6 +73,7 @@
 			children = (
 				ED81F208484C5BC2D33C02E1 /* Assets.xcassets */,
 				CB11B70505DED90BC0F650AC /* BindingStore.swift */,
+				8642F1C28399C196A67CD3F7 /* CheatSheet.swift */,
 				BEC05C246DBECB2E13DD7B24 /* HyperKeyLogic.swift */,
 				39E89B0E2BDD477B11BE1BA2 /* HyperKeyMonitor.swift */,
 				C93783A08346FDFA5BD884A2 /* Info.plist */,
@@ -198,6 +201,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				823B08889194C79725B97F30 /* BindingStore.swift in Sources */,
+				E8E7CCBCFDE81AA7060FB829 /* CheatSheet.swift in Sources */,
 				F59384C7B14FDF7CE93660B3 /* HyperKeyLogic.swift in Sources */,
 				BCBBAB82067B35FD27EB892B /* HyperKeyMonitor.swift in Sources */,
 				62E43AE436DEDCCDA3B3C6B8 /* KeyMappings.swift in Sources */,

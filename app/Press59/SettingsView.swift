@@ -42,6 +42,7 @@ struct SettingsView: View {
                     }
                 Toggle("Hide the app if it’s already in front", isOn: $store.hidesFrontmostApp)
                 Toggle("Quick tap toggles Caps Lock", isOn: $store.quickTapTogglesCapsLock)
+                Toggle("Hold Caps Lock to show your shortcuts", isOn: $store.showsCheatSheet)
             } footer: {
                 Text("Hold Caps Lock and press a key to open an app. Other keys are sent as ⌃⌥⇧⌘ + key. Tap Caps Lock on its own to turn capitals on or off.\n\nMenu bar icon hidden? Hold Caps Lock and press , or open Press59 again to get back here.")
             }

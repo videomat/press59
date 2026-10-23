@@ -9,6 +9,7 @@ import IOKit.hidsystem
 /// - Hyper + a bound key opens (or hides) that app.
 /// - Hyper + any other key is sent on as ⌃⌥⇧⌘ + key, so other apps can use it as a shortcut.
 /// - A quick tap of Caps Lock on its own still toggles Caps Lock (optional).
+/// - Holding Caps Lock on its own shows the cheat sheet of shortcuts (optional).
 final class HyperKeyMonitor: ObservableObject {
     @Published private(set) var isTrusted = AXIsProcessTrusted()
     @Published private(set) var isRunning = false
@@ -20,11 +21,15 @@ final class HyperKeyMonitor: ObservableObject {
     /// Called when Hyper + `HyperKeyState.settingsKey` is pressed, so Settings are reachable
     /// when macOS hides the menu bar icon.
     var onOpenSettings: (() -> Void)?
+    /// Called to show or hide the cheat sheet while Hyper is held on its own.
+    var onShowCheatSheet: (() -> Void)?
+    var onHideCheatSheet: (() -> Void)?
 
     private let store: BindingStore
     private var tap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var trustTimer: Timer?
+    private var cheatSheetTimer: Timer?
     private var state = HyperKeyState()
 
     init(store: BindingStore) {
@@ -60,6 +65,7 @@ final class HyperKeyMonitor: ObservableObject {
         tap = nil
         runLoopSource = nil
         state.reset()
+        endCheatSheet()
         if isRunning {
             setCapsLockRemapped(false)
         }
@@ -181,6 +187,7 @@ final class HyperKeyMonitor: ObservableObject {
             quickTapTogglesCapsLock: store.quickTapTogglesCapsLock,
             appForKey: { [store] in store.binding(for: $0)?.appURL }
         )
+        updateCheatSheet(for: keyEvent)
 
         switch action {
         case .passThrough, .swallow:
@@ -195,6 +202,34 @@ final class HyperKeyMonitor: ObservableObject {
             toggle(appURL)
         }
         return action.passesEvent ? Unmanaged.passUnretained(event) : nil
+    }
+
+    // MARK: - Cheat sheet
+
+    private func updateCheatSheet(for event: HyperKeyEvent) {
+        if event.isHyperKey && event.isDown {
+            if !event.isRepeat && store.showsCheatSheet { scheduleCheatSheet() }
+            return
+        }
+        // Letting go of Hyper or pressing any other key ends the hold.
+        endCheatSheet()
+    }
+
+    private func scheduleCheatSheet() {
+        cheatSheetTimer?.invalidate()
+        cheatSheetTimer = Timer.scheduledTimer(withTimeInterval: HyperKeyState.cheatSheetDelay, repeats: false) { [weak self] _ in
+            guard let self else { return }
+            self.cheatSheetTimer = nil
+            if self.state.holdElapsed() {
+                self.onShowCheatSheet?()
+            }
+        }
+    }
+
+    private func endCheatSheet() {
+        cheatSheetTimer?.invalidate()
+        cheatSheetTimer = nil
+        onHideCheatSheet?()
     }
 
     private func character(of event: CGEvent) -> String? {

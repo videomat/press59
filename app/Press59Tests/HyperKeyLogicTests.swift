@@ -24,6 +24,37 @@ final class HyperKeyLogicTests: XCTestCase {
     private static func down(_ character: String) -> HyperKeyEvent { HyperKeyEvent(isDown: true, character: character) }
     private static func up(_ character: String) -> HyperKeyEvent { HyperKeyEvent(isDown: false, character: character) }
 
+    // MARK: - Cheat sheet
+
+    func testHoldingHyperAloneShowsTheCheatSheet() {
+        _ = press(Self.hyperDown)
+        XCTAssertTrue(state.holdElapsed())
+    }
+
+    func testReleasingAfterTheCheatSheetIsNotATap() {
+        _ = press(Self.hyperDown)
+        _ = state.holdElapsed()
+        XCTAssertEqual(press(Self.hyperUp), .swallow)
+    }
+
+    func testShortcutDuringTheCheatSheetStillWorks() {
+        _ = press(Self.hyperDown)
+        _ = state.holdElapsed()
+        XCTAssertEqual(press(Self.down("c")), .openApp(chrome))
+    }
+
+    func testNoCheatSheetOnceAnotherKeyWasPressed() {
+        _ = press(Self.hyperDown)
+        _ = press(Self.down("c"))
+        XCTAssertFalse(state.holdElapsed())
+    }
+
+    func testNoCheatSheetAfterRelease() {
+        _ = press(Self.hyperDown)
+        _ = press(Self.hyperUp)
+        XCTAssertFalse(state.holdElapsed())
+    }
+
     // MARK: - Quick tap
 
     func testQuickTapTogglesCapsLock() {
