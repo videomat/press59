@@ -2,7 +2,7 @@
 
 **Hold Caps Lock, press a letter, and the app is in front.**
 
-Press59 is a small, free menu bar app for macOS that turns Caps Lock into a launcher. Give each app a letter: Caps Lock + C opens Chrome, Caps Lock + S opens Slack. Press the same keys again and the app hides. A quick tap of Caps Lock on its own still toggles capitals.
+Press59 is a small, free menu bar app for macOS that turns Caps Lock into an app switcher. Give each app a letter: Caps Lock + C brings Chrome to the front, Caps Lock + S switches to Slack, and opens it if it isn't running. Press the same keys again and the app hides. A quick tap of Caps Lock on its own still toggles capitals.
 
 [Download for Mac](https://press59.win/download) · [press59.win](https://press59.win) · macOS 14 Sonoma or later, Apple silicon and Intel
 
