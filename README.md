@@ -29,7 +29,7 @@ If you use another Hyper key tool (Raycast's Hyper Key, Hyperkey, Karabiner-Elem
 
 ## Privacy
 
-Press59 has no account, no analytics and makes no network requests. It needs Accessibility access to see keystrokes so it can catch its shortcuts before other apps do; it doesn't record or store what you type. Your shortcuts are saved locally in its preferences.
+Press59 has no account and no analytics. Its only network request is a daily check of press59.win for updates, which sends nothing but its version; turn it off in Settings. Installing an update counts as a download, just like one from the website (version and country, no IP address). It needs Accessibility access to see keystrokes so it can catch its shortcuts before other apps do; it doesn't record or store what you type. Your shortcuts are saved locally in its preferences.
 
 ## How it works
 
