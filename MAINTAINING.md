@@ -91,7 +91,9 @@ If testing finds a problem, fix it, bump the version again, and run `package` fo
 
 ## Download analytics
 
-Every download through `/download` is recorded in a private D1 database, `press59-analytics`: time, version, country, source (homepage, direct, or the referring site) and whether it looks like a bot. No IP addresses or user agents are stored, and there is no public endpoint. Read it from the terminal with your Wrangler login:
+Every download through `/download` is recorded in a private D1 database, `press59-analytics`: time, version, country, source (homepage, direct, or the referring site), channel and whether it looks like a bot.
+
+The channel is where the visitor came from before downloading. Tag the links you share with `?ref=`, e.g. `press59.win/?ref=reddit` or `press59.win/download?ref=hn`; the homepage passes the tag on to its download links. Without a tag, the homepage passes on the site that sent the visitor, e.g. `news.ycombinator.com`. Nothing is stored in the browser. No IP addresses or user agents are stored, and there is no public endpoint. Read it from the terminal with your Wrangler login:
 
 ```bash
 ./scripts/stats                # production

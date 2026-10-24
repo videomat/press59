@@ -45,6 +45,10 @@ const queries = {
       SUM(downloaded_at >= ${since(days)}) AS recent,
       COUNT(*) AS allTime
     FROM downloads WHERE ${people} GROUP BY 1 ORDER BY allTime DESC, recent DESC LIMIT 15`,
+  channels: `SELECT channel,
+      SUM(downloaded_at >= ${since(days)}) AS recent,
+      COUNT(*) AS allTime
+    FROM downloads WHERE ${people} AND channel IS NOT NULL GROUP BY channel ORDER BY allTime DESC, recent DESC LIMIT 15`,
 };
 
 const names = Object.keys(queries);
@@ -91,3 +95,4 @@ table(`Versions (last ${days} days)`, data.versions, ['version', 'downloads']);
 table('Countries', data.countries, ['country', 'recent', 'allTime', 'homepage', 'direct', 'external'],
   ['', `${days}d`, 'all', 'homepage', 'direct', 'external']);
 table('Sources', data.sources, ['source', 'recent', 'allTime'], ['', `${days}d`, 'all']);
+table('Channels (?ref= tag, or the site that sent a homepage visitor)', data.channels, ['channel', 'recent', 'allTime'], ['', `${days}d`, 'all']);

@@ -65,3 +65,23 @@ async function showLatestRelease() {
 }
 
 showLatestRelease();
+
+// Pass on where the visitor came from, so /download can count which channels lead to downloads.
+// A ?ref= tag on the page wins over the referring site; nothing is stored in the browser.
+function downloadChannel() {
+  const ref = new URLSearchParams(location.search).get('ref');
+  if (ref) return ref;
+  try {
+    const host = new URL(document.referrer).hostname;
+    return host === location.hostname ? null : host;
+  } catch {
+    return null;
+  }
+}
+
+const channel = downloadChannel();
+if (channel) {
+  for (const link of document.querySelectorAll('a[href="/download"]')) {
+    link.href = `/download?ref=${encodeURIComponent(channel)}`;
+  }
+}

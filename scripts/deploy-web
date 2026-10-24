@@ -12,4 +12,7 @@ if [[ "${1:-}" == "preview" ]]; then
   branch="preview"
 fi
 
+# The functions write columns that new migrations add, so apply them before the code goes out.
+npx --yes wrangler@4 d1 migrations apply press59-analytics --remote
+
 exec npx --yes wrangler@4 pages deploy web --project-name press59 --branch "$branch"

@@ -22,6 +22,15 @@ function source(request) {
   }
 }
 
+// The ?ref= on /download: a tag put on shared links (press59.win/?ref=reddit) or the site
+// that sent a visitor to the homepage, which main.js adds to its download links.
+const CHANNEL = /^[a-z0-9][a-z0-9._-]{0,63}$/;
+
+function channel(request) {
+  const ref = new URL(request.url).searchParams.get('ref')?.toLowerCase().replace(/^www\./, '');
+  return ref && CHANNEL.test(ref) ? ref : null;
+}
+
 function client(request) {
   const userAgent = request.headers.get('user-agent') ?? '';
   if (request.cf?.botManagement?.verifiedBot) return 'bot';
@@ -37,8 +46,8 @@ export async function recordDownload(env, request, release) {
   const { source: from, referrerHost } = source(request);
   try {
     await env.DB
-      .prepare('INSERT INTO downloads (downloaded_at, version, country, source, referrer_host, client) VALUES (?, ?, ?, ?, ?, ?)')
-      .bind(new Date().toISOString(), release.version, request.cf?.country ?? null, from, referrerHost, client(request))
+      .prepare('INSERT INTO downloads (downloaded_at, version, country, source, referrer_host, channel, client) VALUES (?, ?, ?, ?, ?, ?, ?)')
+      .bind(new Date().toISOString(), release.version, request.cf?.country ?? null, from, referrerHost, channel(request), client(request))
       .run();
   } catch (error) {
     // Analytics must never break a download.
