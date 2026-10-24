@@ -7,6 +7,7 @@ struct SettingsView: View {
     @ObservedObject var store: BindingStore
     @ObservedObject var monitor: HyperKeyMonitor
     let updater: SPUUpdater
+    let showGuide: () -> Void
     @State private var launchesAtLogin = SMAppService.mainApp.status == .enabled
     @State private var checksForUpdates = false
 
@@ -45,7 +46,11 @@ struct SettingsView: View {
                 Toggle("Hold Caps Lock to show your shortcuts", isOn: $store.showsCheatSheet)
                 Toggle("Caps Lock + arrow keys move windows", isOn: $store.movesWindows)
             } footer: {
-                Text("Hold Caps Lock and press a key to open an app. Other keys are sent as ⌃⌥⇧⌘ + key. Tap Caps Lock on its own to turn capitals on or off. Caps Lock + ← or → puts the front window on that half of the screen, and again on a third. Then ↑ or ↓ for the top or bottom of it. On its own, ↑ fills the screen and ↓ centers the window.\n\nMenu bar icon hidden? Hold Caps Lock and press , or open Press59 again to get back here.")
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Hold Caps Lock and press a key to open an app. Menu bar icon hidden? Hold Caps Lock and press , or open Press59 again to get back here.")
+                    Button("How Press59 Works…", action: showGuide)
+                        .buttonStyle(.link)
+                }
             }
 
             Section("Shortcuts") {

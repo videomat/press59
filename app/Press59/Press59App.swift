@@ -10,12 +10,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil
     )
     private var settingsWindow: NSWindow?
+    private var guideWindow: NSWindow?
+    private static let hasShownGuideKey = "hasShownGuide"
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         monitor.onOpenSettings = { [weak self] in self?.showSettings() }
         monitor.onShowCheatSheet = { [weak self] in self?.cheatSheet.show() }
         monitor.onHideCheatSheet = { [weak self] in self?.cheatSheet.hide() }
         monitor.start()
+        // Explain how it works once, on first launch.
+        if !UserDefaults.standard.bool(forKey: Self.hasShownGuideKey) {
+            UserDefaults.standard.set(true, forKey: Self.hasShownGuideKey)
+            showGuide()
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -35,7 +42,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func showSettings() {
         if settingsWindow == nil {
             let window = NSWindow(contentViewController: NSHostingController(
-                rootView: SettingsView(store: store, monitor: monitor, updater: updaterController.updater)
+                rootView: SettingsView(store: store, monitor: monitor, updater: updaterController.updater, showGuide: showGuide)
             ))
             window.title = "Press59 Settings"
             window.styleMask = [.titled, .closable]
@@ -45,6 +52,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         NSApp.activate(ignoringOtherApps: true)
         settingsWindow?.makeKeyAndOrderFront(nil)
+    }
+
+    func showGuide() {
+        if guideWindow == nil {
+            let window = NSWindow(contentViewController: NSHostingController(rootView: GuideView()))
+            window.title = "How Press59 Works"
+            window.styleMask = [.titled, .closable]
+            window.isReleasedWhenClosed = false
+            window.center()
+            guideWindow = window
+        }
+        NSApp.activate(ignoringOtherApps: true)
+        guideWindow?.makeKeyAndOrderFront(nil)
     }
 }
 
@@ -58,7 +78,8 @@ struct Press59App: App {
                 store: appDelegate.store,
                 monitor: appDelegate.monitor,
                 updater: appDelegate.updaterController.updater,
-                showSettings: appDelegate.showSettings
+                showSettings: appDelegate.showSettings,
+                showGuide: appDelegate.showGuide
             )
         } label: {
             Image("MenuBarIcon")
@@ -72,6 +93,7 @@ private struct MenuContent: View {
     @ObservedObject var monitor: HyperKeyMonitor
     let updater: SPUUpdater
     let showSettings: () -> Void
+    let showGuide: () -> Void
 
     var body: some View {
         if !monitor.isTrusted {
@@ -86,6 +108,7 @@ private struct MenuContent: View {
         }
         Button("Settings…", action: showSettings)
             .keyboardShortcut(",")
+        Button("How Press59 Works…", action: showGuide)
         Button("Check for Updates…") {
             // Sparkle's window opens behind other apps unless the menu bar app comes forward.
             NSApp.activate(ignoringOtherApps: true)
