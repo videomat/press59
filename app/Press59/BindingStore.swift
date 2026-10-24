@@ -67,6 +67,7 @@ final class BindingStore: ObservableObject {
     private static let hidesFrontmostAppKey = "hidesFrontmostApp"
     private static let quickTapTogglesCapsLockKey = "quickTapTogglesCapsLock"
     private static let showsCheatSheetKey = "showsCheatSheet"
+    private static let movesWindowsKey = "movesWindows"
 
     @Published var bindings: [AppBinding] {
         didSet { saveBindings() }
@@ -84,6 +85,10 @@ final class BindingStore: ObservableObject {
         didSet { UserDefaults.standard.set(showsCheatSheet, forKey: Self.showsCheatSheetKey) }
     }
 
+    @Published var movesWindows: Bool {
+        didSet { UserDefaults.standard.set(movesWindows, forKey: Self.movesWindowsKey) }
+    }
+
     init() {
         let defaults = UserDefaults.standard
         if let data = defaults.data(forKey: Self.bindingsKey),
@@ -95,6 +100,7 @@ final class BindingStore: ObservableObject {
         hidesFrontmostApp = defaults.object(forKey: Self.hidesFrontmostAppKey) as? Bool ?? true
         quickTapTogglesCapsLock = defaults.object(forKey: Self.quickTapTogglesCapsLockKey) as? Bool ?? true
         showsCheatSheet = defaults.object(forKey: Self.showsCheatSheetKey) as? Bool ?? true
+        movesWindows = defaults.object(forKey: Self.movesWindowsKey) as? Bool ?? true
     }
 
     func binding(for key: String) -> AppBinding? {

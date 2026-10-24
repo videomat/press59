@@ -11,9 +11,10 @@ final class HyperKeyLogicTests: XCTestCase {
 
     private func press(
         _ event: HyperKeyEvent,
-        quickTapTogglesCapsLock: Bool = true
+        quickTapTogglesCapsLock: Bool = true,
+        movesWindows: Bool = true
     ) -> HyperKeyAction {
-        state.handle(event, quickTapTogglesCapsLock: quickTapTogglesCapsLock) { [chrome] key in
+        state.handle(event, quickTapTogglesCapsLock: quickTapTogglesCapsLock, movesWindows: movesWindows) { [chrome] key in
             key == "c" ? chrome : nil
         }
     }
@@ -23,6 +24,26 @@ final class HyperKeyLogicTests: XCTestCase {
     private static let hyperUp = HyperKeyEvent(isDown: false, isHyperKey: true)
     private static func down(_ character: String) -> HyperKeyEvent { HyperKeyEvent(isDown: true, character: character) }
     private static func up(_ character: String) -> HyperKeyEvent { HyperKeyEvent(isDown: false, character: character) }
+
+    // MARK: - Moving windows
+
+    private static let leftArrowDown = HyperKeyEvent(isDown: true, character: "\u{F702}", keyCode: 123)
+    private static let leftArrowUp = HyperKeyEvent(isDown: false, character: "\u{F702}", keyCode: 123)
+
+    func testHyperArrowMovesTheWindow() {
+        _ = press(Self.hyperDown)
+        XCTAssertEqual(press(Self.leftArrowDown), .moveWindow(.leftHalf))
+        XCTAssertEqual(press(Self.leftArrowUp), .swallow)
+    }
+
+    func testHyperArrowGetsModifiersWhenMovingWindowsIsOff() {
+        _ = press(Self.hyperDown)
+        XCTAssertEqual(press(Self.leftArrowDown, movesWindows: false), .addHyperModifiers)
+    }
+
+    func testArrowWithoutHyperPassesThrough() {
+        XCTAssertEqual(press(Self.leftArrowDown), .passThrough)
+    }
 
     // MARK: - Cheat sheet
 

@@ -10,6 +10,7 @@ import IOKit.hidsystem
 /// - Hyper + any other key is sent on as ⌃⌥⇧⌘ + key, so other apps can use it as a shortcut.
 /// - A quick tap of Caps Lock on its own still toggles Caps Lock (optional).
 /// - Holding Caps Lock on its own shows the cheat sheet of shortcuts (optional).
+/// - Hyper + an arrow key moves the front window to a half of the screen, fills it or centers it (optional).
 final class HyperKeyMonitor: ObservableObject {
     @Published private(set) var isTrusted = AXIsProcessTrusted()
     @Published private(set) var isRunning = false
@@ -30,6 +31,8 @@ final class HyperKeyMonitor: ObservableObject {
     private var runLoopSource: CFRunLoopSource?
     private var trustTimer: Timer?
     private var cheatSheetTimer: Timer?
+    /// The window Press59 last moved, where to, and the frame it ended up with.
+    private var lastMove: (window: AXUIElement, position: WindowPosition, frame: CGRect)?
     private var state = HyperKeyState()
 
     init(store: BindingStore) {
@@ -180,11 +183,13 @@ final class HyperKeyMonitor: ObservableObject {
             isDown: type == .keyDown,
             isRepeat: event.getIntegerValueField(.keyboardEventAutorepeat) != 0,
             isHyperKey: event.getIntegerValueField(.keyboardEventKeycode) == Self.f18KeyCode,
-            character: character(of: event)
+            character: character(of: event),
+            keyCode: event.getIntegerValueField(.keyboardEventKeycode)
         )
         let action = state.handle(
             keyEvent,
             quickTapTogglesCapsLock: store.quickTapTogglesCapsLock,
+            movesWindows: store.movesWindows,
             appForKey: { [store] in store.binding(for: $0)?.appURL }
         )
         updateCheatSheet(for: keyEvent)
@@ -200,6 +205,8 @@ final class HyperKeyMonitor: ObservableObject {
             onOpenSettings?()
         case .openApp(let appURL):
             toggle(appURL)
+        case .moveWindow(let position):
+            moveFrontWindow(to: position)
         }
         return action.passesEvent ? Unmanaged.passUnretained(event) : nil
     }
@@ -253,5 +260,71 @@ final class HyperKeyMonitor: ObservableObject {
         let configuration = NSWorkspace.OpenConfiguration()
         configuration.activates = true
         NSWorkspace.shared.openApplication(at: appURL, configuration: configuration)
+    }
+
+    // MARK: - Windows
+
+    /// Moves the front app's focused window within the screen it's mostly on.
+    /// The same arrow again on a window that hasn't moved since goes from a half to a third and back.
+    private func moveFrontWindow(to requested: WindowPosition) {
+        guard let app = NSWorkspace.shared.frontmostApplication,
+              let mainScreen = NSScreen.screens.first else { return }
+        let appElement = AXUIElementCreateApplication(app.processIdentifier)
+        var value: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(appElement, kAXFocusedWindowAttribute as CFString, &value) == .success,
+              let value, CFGetTypeID(value) == AXUIElementGetTypeID() else { return }
+        let window = value as! AXUIElement
+
+        let mainHeight = mainScreen.frame.height
+        guard let current = frame(of: window) else { return }
+        var position = requested
+        if let lastMove, CFEqual(lastMove.window, window), Self.isSameFrame(lastMove.frame, current) {
+            position = requested.repeated(after: lastMove.position)
+        }
+        let currentInAppKit = ScreenCoordinates.flip(current, mainScreenHeight: mainHeight)
+        let screen = NSScreen.screens.max { overlap($0.frame, currentInAppKit) < overlap($1.frame, currentInAppKit) } ?? mainScreen
+        let target = ScreenCoordinates.flip(position.frame(in: screen.visibleFrame), mainScreenHeight: mainHeight)
+
+        // Position, size, then position again: an app may refuse a size that doesn't fit where the
+        // window still is, and resizing can nudge the window.
+        setPosition(target.origin, of: window)
+        setSize(target.size, of: window)
+        setPosition(target.origin, of: window)
+        // Remember where it actually ended up: apps may keep a minimum size or snap to a grid.
+        lastMove = frame(of: window).map { (window, position, $0) }
+    }
+
+    /// Frames within a point of each other, allowing for rounding.
+    private static func isSameFrame(_ a: CGRect, _ b: CGRect) -> Bool {
+        abs(a.minX - b.minX) <= 1 && abs(a.minY - b.minY) <= 1 && abs(a.width - b.width) <= 1 && abs(a.height - b.height) <= 1
+    }
+
+    private func overlap(_ a: CGRect, _ b: CGRect) -> CGFloat {
+        let intersection = a.intersection(b)
+        return intersection.isNull ? 0 : intersection.width * intersection.height
+    }
+
+    private func frame(of window: AXUIElement) -> CGRect? {
+        var positionValue: CFTypeRef?
+        var sizeValue: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(window, kAXPositionAttribute as CFString, &positionValue) == .success,
+              AXUIElementCopyAttributeValue(window, kAXSizeAttribute as CFString, &sizeValue) == .success else { return nil }
+        var position = CGPoint.zero
+        var size = CGSize.zero
+        guard AXValueGetValue(positionValue as! AXValue, .cgPoint, &position),
+              AXValueGetValue(sizeValue as! AXValue, .cgSize, &size) else { return nil }
+        return CGRect(origin: position, size: size)
+    }
+
+    private func setPosition(_ position: CGPoint, of window: AXUIElement) {
+        var position = position
+        guard let value = AXValueCreate(.cgPoint, &position) else { return }
+        AXUIElementSetAttributeValue(window, kAXPositionAttribute as CFString, value)
+    }
+
+    private func setSize(_ size: CGSize, of window: AXUIElement) {
+        var size = size
+        guard let value = AXValueCreate(.cgSize, &size) else { return }
+        AXUIElementSetAttributeValue(window, kAXSizeAttribute as CFString, value)
     }
 }

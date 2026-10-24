@@ -8,6 +8,8 @@ struct HyperKeyEvent {
     var isHyperKey = false
     /// The typed character, lowercased, if any.
     var character: String?
+    /// The virtual key code, for keys without a character such as the arrows.
+    var keyCode: Int64?
 }
 
 /// What to do with a key event.
@@ -24,6 +26,8 @@ enum HyperKeyAction: Equatable {
     case openSettings
     /// Drop it and open (or hide) the app.
     case openApp(URL)
+    /// Drop it and move the front window.
+    case moveWindow(WindowPosition)
 
     /// Whether the event should still reach other apps.
     var passesEvent: Bool {
@@ -33,6 +37,7 @@ enum HyperKeyAction: Equatable {
 
 /// The Hyper key's decision-making, separate from the event tap so it can be tested:
 /// - Hyper + an assigned key opens that app; Hyper + `settingsKey` opens Settings.
+/// - Hyper + an arrow key moves the front window (optional).
 /// - Hyper + any other key gets ⌃⌥⇧⌘.
 /// - Pressing and releasing Hyper with no other key in between is a quick tap.
 /// - Holding Hyper on its own for `cheatSheetDelay` shows the cheat sheet instead.
@@ -47,6 +52,7 @@ struct HyperKeyState {
     mutating func handle(
         _ event: HyperKeyEvent,
         quickTapTogglesCapsLock: Bool,
+        movesWindows: Bool,
         appForKey: (String) -> URL?
     ) -> HyperKeyAction {
         if event.isHyperKey {
@@ -67,6 +73,9 @@ struct HyperKeyState {
 
         // Act on the first key-down only; repeats and key-ups of a shortcut are dropped too.
         let acts = event.isDown && !event.isRepeat
+        if movesWindows, let keyCode = event.keyCode, let position = WindowPosition(keyCode: keyCode) {
+            return acts ? .moveWindow(position) : .swallow
+        }
         if event.character == Self.settingsKey {
             return acts ? .openSettings : .swallow
         }

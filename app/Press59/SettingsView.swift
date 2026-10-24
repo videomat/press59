@@ -43,8 +43,9 @@ struct SettingsView: View {
                 Toggle("Hide the app if it’s already in front", isOn: $store.hidesFrontmostApp)
                 Toggle("Quick tap toggles Caps Lock", isOn: $store.quickTapTogglesCapsLock)
                 Toggle("Hold Caps Lock to show your shortcuts", isOn: $store.showsCheatSheet)
+                Toggle("Caps Lock + arrow keys move windows", isOn: $store.movesWindows)
             } footer: {
-                Text("Hold Caps Lock and press a key to open an app. Other keys are sent as ⌃⌥⇧⌘ + key. Tap Caps Lock on its own to turn capitals on or off.\n\nMenu bar icon hidden? Hold Caps Lock and press , or open Press59 again to get back here.")
+                Text("Hold Caps Lock and press a key to open an app. Other keys are sent as ⌃⌥⇧⌘ + key. Tap Caps Lock on its own to turn capitals on or off. With Caps Lock + ← → ↑ ↓, the front window takes the left or right half of the screen (press again for a third), fills it, or sits centered.\n\nMenu bar icon hidden? Hold Caps Lock and press , or open Press59 again to get back here.")
             }
 
             Section("Shortcuts") {
