@@ -72,6 +72,30 @@ final class CheatSheetController {
 struct CheatSheetView: View {
     let bindings: [AppBinding]
 
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("⇪ Caps Lock + key")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Color.primary.opacity(0.55))
+            ShortcutKeyboard(bindings: bindings)
+        }
+        .padding(20)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).strokeBorder(.white.opacity(0.12)))
+    }
+}
+
+/// A keyboard with each app on its key. Used by the cheat sheet and the Dock suggestions.
+struct ShortcutKeyboard: View {
+    let bindings: [AppBinding]
+    /// Keys to tint as new, e.g. suggested shortcuts not added yet.
+    var newKeys: Set<String> = []
+    /// Keys whose app is shown faded, e.g. suggestions left out.
+    var dimmedKeys: Set<String> = []
+    /// Called when one of `tappableKeys` is clicked.
+    var tappableKeys: Set<String> = []
+    var onTap: (String) -> Void = { _ in }
+
     /// Keyboard rows, each with how far it's indented on a real keyboard (in key widths).
     private static let rows: [(keys: String, indent: CGFloat)] = [
         ("1234567890", 0),
@@ -88,39 +112,49 @@ struct CheatSheetView: View {
         let rows = Self.rows.filter { row in row.keys.first != "1" || row.keys.contains { byKey[String($0)] != nil } }
         let firstIndent = rows.first?.indent ?? 0
 
-        VStack(alignment: .leading, spacing: 14) {
-            Text("⇪ Caps Lock + key")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(Color.primary.opacity(0.55))
-            VStack(alignment: .leading, spacing: Self.spacing) {
-                ForEach(rows, id: \.keys) { row in
-                    HStack(spacing: Self.spacing) {
-                        ForEach(row.keys.map(String.init), id: \.self) { key in
-                            CheatSheetKey(key: key, binding: byKey[key])
+        VStack(alignment: .leading, spacing: Self.spacing) {
+            ForEach(rows, id: \.keys) { row in
+                HStack(spacing: Self.spacing) {
+                    ForEach(row.keys.map(String.init), id: \.self) { key in
+                        let shortcutKey = ShortcutKey(key: key, binding: byKey[key], isNew: newKeys.contains(key),
+                                                      isDimmed: dimmedKeys.contains(key))
+                        if tappableKeys.contains(key) {
+                            Button { onTap(key) } label: { shortcutKey }
+                                .buttonStyle(.plain)
+                        } else {
+                            shortcutKey
                         }
                     }
-                    .padding(.leading, (row.indent - firstIndent) * (Self.keySize + Self.spacing))
                 }
+                .padding(.leading, (row.indent - firstIndent) * (Self.keySize + Self.spacing))
             }
         }
-        .padding(20)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).strokeBorder(.white.opacity(0.12)))
     }
 }
 
-private struct CheatSheetKey: View {
+private struct ShortcutKey: View {
     let key: String
     let binding: AppBinding?
+    let isNew: Bool
+    var isDimmed = false
+
+    /// Press59's orange, as in the app icon and on press59.win.
+    private static let orange = Color(red: 1, green: 0.42, blue: 0.17)
 
     private var isSettings: Bool { key == HyperKeyState.settingsKey }
 
     var body: some View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color.primary.opacity(binding == nil && !isSettings ? 0.04 : 0.1))
+                .fill(isNew ? Self.orange.opacity(0.28) : Color.primary.opacity(binding == nil && !isSettings ? 0.04 : 0.1))
+                .overlay {
+                    if isNew {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Self.orange, lineWidth: 1.5)
+                    }
+                }
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .opacity(isDimmed ? 0.35 : 1)
             if binding != nil || isSettings {
                 Text(key.uppercased())
                     .font(.system(size: 10, weight: .bold, design: .monospaced))
@@ -128,9 +162,9 @@ private struct CheatSheetKey: View {
                     .padding(5)
             }
         }
-        .frame(width: CheatSheetView.keySize, height: CheatSheetView.keySize)
+        .frame(width: ShortcutKeyboard.keySize, height: ShortcutKeyboard.keySize)
+        .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
-
     @ViewBuilder private var content: some View {
         if let binding {
             label(Image(nsImage: binding.largeIcon).resizable().frame(width: 34, height: 34), binding.appName)

@@ -5,6 +5,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let store = BindingStore()
     lazy var monitor = HyperKeyMonitor(store: store)
     lazy var cheatSheet = CheatSheetController(store: store)
+    lazy var dockSuggestions = DockSuggestionsController(store: store)
     /// Checks press59.win/appcast.xml for new versions and installs them (Sparkle).
     let updaterController = SPUStandardUpdaterController(
         startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil
@@ -18,11 +19,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         monitor.onShowCheatSheet = { [weak self] in self?.cheatSheet.show() }
         monitor.onHideCheatSheet = { [weak self] in self?.cheatSheet.hide() }
         monitor.start()
-        // Explain how it works once, on first launch.
-        if !UserDefaults.standard.bool(forKey: Self.hasShownGuideKey) {
-            UserDefaults.standard.set(true, forKey: Self.hasShownGuideKey)
-            showGuide()
+        // On first launch, offer shortcuts for the Dock apps, then explain how it works.
+        // The guide also shows once to people updating from before it existed.
+        if store.isFirstLaunch {
+            dockSuggestions.show(onClose: { [weak self] in self?.showGuideOnce() })
+        } else {
+            showGuideOnce()
         }
+    }
+
+    private func showGuideOnce() {
+        guard !UserDefaults.standard.bool(forKey: Self.hasShownGuideKey) else { return }
+        UserDefaults.standard.set(true, forKey: Self.hasShownGuideKey)
+        showGuide()
+    }
+
+    func showDockSuggestions() {
+        dockSuggestions.show()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -42,7 +55,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func showSettings() {
         if settingsWindow == nil {
             let window = NSWindow(contentViewController: NSHostingController(
-                rootView: SettingsView(store: store, monitor: monitor, updater: updaterController.updater, showGuide: showGuide)
+                rootView: SettingsView(store: store, monitor: monitor, updater: updaterController.updater,
+                                       showGuide: showGuide, showDockSuggestions: showDockSuggestions)
             ))
             window.title = "Press59 Settings"
             window.styleMask = [.titled, .closable]

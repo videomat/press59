@@ -90,18 +90,28 @@ final class BindingStore: ObservableObject {
         didSet { UserDefaults.standard.set(movesWindows, forKey: Self.movesWindowsKey) }
     }
 
+    /// Whether Press59 had no saved shortcuts at launch, i.e. it's running for the first time.
+    let isFirstLaunch: Bool
+
     init() {
         let defaults = UserDefaults.standard
         if let data = defaults.data(forKey: Self.bindingsKey),
            let saved = try? JSONDecoder().decode([AppBinding].self, from: data) {
             bindings = saved
+            isFirstLaunch = false
         } else {
-            bindings = Self.starterBindings()
+            // Start empty; the Dock suggestions offer shortcuts on first launch.
+            bindings = []
+            isFirstLaunch = true
         }
         hidesFrontmostApp = defaults.object(forKey: Self.hidesFrontmostAppKey) as? Bool ?? true
         quickTapTogglesCapsLock = defaults.object(forKey: Self.quickTapTogglesCapsLockKey) as? Bool ?? true
         showsCheatSheet = defaults.object(forKey: Self.showsCheatSheetKey) as? Bool ?? true
         movesWindows = defaults.object(forKey: Self.movesWindowsKey) as? Bool ?? true
+        if isFirstLaunch {
+            // Saved now, so the next launch isn't a first launch even if nothing is added.
+            saveBindings()
+        }
     }
 
     func binding(for key: String) -> AppBinding? {
@@ -126,8 +136,12 @@ final class BindingStore: ObservableObject {
                                       taken: Set(bindings.map(\.key)))
     }
 
-    func addDockApps() {
-        bindings += dockAppsToAdd
+    /// Adds shortcuts, skipping any whose key or app got a shortcut in the meantime.
+    func add(_ newBindings: [AppBinding]) {
+        for binding in newBindings where self.binding(for: binding.key) == nil
+            && !bindings.contains(where: { $0.appURL.standardizedFileURL == binding.appURL.standardizedFileURL }) {
+            bindings.append(binding)
+        }
     }
 
     func remove(_ binding: AppBinding) {
@@ -137,11 +151,6 @@ final class BindingStore: ObservableObject {
     private func saveBindings() {
         guard let data = try? JSONEncoder().encode(bindings) else { return }
         UserDefaults.standard.set(data, forKey: Self.bindingsKey)
-    }
-
-    /// Shortcuts for the apps in the Dock on first launch, so Press59 works right away.
-    private static func starterBindings() -> [AppBinding] {
-        suggestedBindings(for: DockApps.urls(), taken: [])
     }
 
     private static func suggestedBindings(for appURLs: [URL], taken: Set<String>) -> [AppBinding] {

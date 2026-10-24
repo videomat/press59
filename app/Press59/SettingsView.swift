@@ -8,6 +8,7 @@ struct SettingsView: View {
     @ObservedObject var monitor: HyperKeyMonitor
     let updater: SPUUpdater
     let showGuide: () -> Void
+    let showDockSuggestions: () -> Void
     @State private var launchesAtLogin = SMAppService.mainApp.status == .enabled
     @State private var checksForUpdates = false
 
@@ -85,7 +86,7 @@ struct SettingsView: View {
                 }
                 HStack {
                     Button("Add App…", action: chooseApp)
-                    Button("Add Apps from Dock", action: store.addDockApps)
+                    Button("Add Apps from Dock…", action: showDockSuggestions)
                         .disabled(store.dockAppsToAdd.isEmpty)
                 }
             }
