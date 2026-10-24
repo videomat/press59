@@ -54,15 +54,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// not only from a SwiftUI view.
     func showSettings() {
         if settingsWindow == nil {
-            let window = NSWindow(contentViewController: NSHostingController(
-                rootView: SettingsView(store: store, monitor: monitor, updater: updaterController.updater,
-                                       showGuide: showGuide, showDockSuggestions: showDockSuggestions)
-            ))
-            window.title = "Press59 Settings"
-            window.styleMask = [.titled, .closable]
-            window.isReleasedWhenClosed = false
-            window.center()
-            settingsWindow = window
+            settingsWindow = SettingsWindow.make(
+                store: store,
+                monitor: monitor,
+                updater: updaterController.updater,
+                showGuide: showGuide,
+                showDockSuggestions: showDockSuggestions
+            )
         }
         NSApp.activate(ignoringOtherApps: true)
         settingsWindow?.makeKeyAndOrderFront(nil)
