@@ -10,7 +10,7 @@ import IOKit.hidsystem
 /// - Hyper + any other key is sent on as ⌃⌥⇧⌘ + key, so other apps can use it as a shortcut.
 /// - A quick tap of Caps Lock on its own still toggles Caps Lock (optional).
 /// - Holding Caps Lock on its own shows the cheat sheet of shortcuts (optional).
-/// - Hyper + an arrow key moves the front window to a half of the screen, fills it or centers it (optional).
+/// - Hyper + the arrow keys move the front window to halves, thirds and quarters of the screen (optional).
 final class HyperKeyMonitor: ObservableObject {
     @Published private(set) var isTrusted = AXIsProcessTrusted()
     @Published private(set) var isRunning = false
@@ -205,8 +205,8 @@ final class HyperKeyMonitor: ObservableObject {
             onOpenSettings?()
         case .openApp(let appURL):
             toggle(appURL)
-        case .moveWindow(let position):
-            moveFrontWindow(to: position)
+        case .moveWindow(let arrow):
+            moveFrontWindow(arrow)
         }
         return action.passesEvent ? Unmanaged.passUnretained(event) : nil
     }
@@ -264,9 +264,9 @@ final class HyperKeyMonitor: ObservableObject {
 
     // MARK: - Windows
 
-    /// Moves the front app's focused window within the screen it's mostly on.
-    /// The same arrow again on a window that hasn't moved since goes from a half to a third and back.
-    private func moveFrontWindow(to requested: WindowPosition) {
+    /// Moves the front app's focused window within the screen it's mostly on. Arrows combine with
+    /// the previous move (see `WindowPosition.next`) while the window stays where Press59 put it.
+    private func moveFrontWindow(_ arrow: WindowArrow) {
         guard let app = NSWorkspace.shared.frontmostApplication,
               let mainScreen = NSScreen.screens.first else { return }
         let appElement = AXUIElementCreateApplication(app.processIdentifier)
@@ -277,10 +277,11 @@ final class HyperKeyMonitor: ObservableObject {
 
         let mainHeight = mainScreen.frame.height
         guard let current = frame(of: window) else { return }
-        var position = requested
+        var previous: WindowPosition?
         if let lastMove, CFEqual(lastMove.window, window), Self.isSameFrame(lastMove.frame, current) {
-            position = requested.repeated(after: lastMove.position)
+            previous = lastMove.position
         }
+        let position = WindowPosition.next(arrow, after: previous)
         let currentInAppKit = ScreenCoordinates.flip(current, mainScreenHeight: mainHeight)
         let screen = NSScreen.screens.max { overlap($0.frame, currentInAppKit) < overlap($1.frame, currentInAppKit) } ?? mainScreen
         let target = ScreenCoordinates.flip(position.frame(in: screen.visibleFrame), mainScreenHeight: mainHeight)

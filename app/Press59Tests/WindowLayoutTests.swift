@@ -1,39 +1,80 @@
 import XCTest
 
 final class WindowLayoutTests: XCTestCase {
-    /// A 1512 × 945 screen's usable area below a 37 pt menu bar, in AppKit coordinates.
-    private let visible = CGRect(x: 0, y: 0, width: 1512, height: 945)
+    /// A 1512 × 944 usable screen area, in AppKit coordinates.
+    private let visible = CGRect(x: 0, y: 0, width: 1512, height: 944)
 
-    func testArrowKeys() {
-        XCTAssertEqual(WindowPosition(keyCode: 123), .leftHalf)
-        XCTAssertEqual(WindowPosition(keyCode: 124), .rightHalf)
-        XCTAssertEqual(WindowPosition(keyCode: 126), .fill)
-        XCTAssertEqual(WindowPosition(keyCode: 125), .center)
-        XCTAssertNil(WindowPosition(keyCode: 0))
+    private func press(_ arrows: WindowArrow...) -> WindowPosition? {
+        arrows.reduce(nil) { previous, arrow in WindowPosition.next(arrow, after: previous) }
     }
 
+    func testArrowKeys() {
+        XCTAssertEqual(WindowArrow(keyCode: 123), .left)
+        XCTAssertEqual(WindowArrow(keyCode: 124), .right)
+        XCTAssertEqual(WindowArrow(keyCode: 126), .up)
+        XCTAssertEqual(WindowArrow(keyCode: 125), .down)
+        XCTAssertNil(WindowArrow(keyCode: 0))
+    }
+
+    // MARK: - Combining arrows
+
+    func testSidesHalfThenThirdThenHalf() {
+        XCTAssertEqual(press(.left), .leftHalf)
+        XCTAssertEqual(press(.left, .left), .tile(.leftThird, .full))
+        XCTAssertEqual(press(.left, .left, .left), .leftHalf)
+        XCTAssertEqual(press(.right, .right), .tile(.rightThird, .full))
+        XCTAssertEqual(press(.left, .right), .rightHalf)
+    }
+
+    func testUpAndDownPickARowOfTheColumn() {
+        XCTAssertEqual(press(.left, .up), .tile(.leftHalf, .top))
+        XCTAssertEqual(press(.left, .down), .tile(.leftHalf, .bottom))
+        XCTAssertEqual(press(.left, .left, .down), .tile(.leftThird, .bottom))
+        XCTAssertEqual(press(.left, .up, .up), .leftHalf)
+        XCTAssertEqual(press(.left, .up, .down), .tile(.leftHalf, .bottom))
+    }
+
+    func testSidesKeepTheRow() {
+        XCTAssertEqual(press(.left, .up, .left), .tile(.leftThird, .top))
+        XCTAssertEqual(press(.left, .up, .right), .tile(.rightHalf, .top))
+    }
+
+    func testUpFillsThenTopHalf() {
+        XCTAssertEqual(press(.up), .fill)
+        XCTAssertEqual(press(.up, .up), .tile(.full, .top))
+        XCTAssertEqual(press(.up, .up, .up), .fill)
+        XCTAssertEqual(press(.up, .up, .left), .tile(.leftHalf, .top))
+    }
+
+    func testDownCentersThenBottomHalf() {
+        XCTAssertEqual(press(.down), .center)
+        XCTAssertEqual(press(.down, .down), .tile(.full, .bottom))
+        XCTAssertEqual(press(.down, .down, .down), .center)
+        XCTAssertEqual(press(.down, .left), .leftHalf)
+    }
+
+    // MARK: - Frames
+
     func testHalvesMeetWithoutGapOrOverlap() {
-        let odd = CGRect(x: 100, y: 50, width: 1511, height: 900)
+        let odd = CGRect(x: 100, y: 50, width: 1511, height: 901)
         let left = WindowPosition.leftHalf.frame(in: odd)
         let right = WindowPosition.rightHalf.frame(in: odd)
-        XCTAssertEqual(left, CGRect(x: 100, y: 50, width: 755, height: 900))
-        XCTAssertEqual(right, CGRect(x: 855, y: 50, width: 756, height: 900))
-        XCTAssertEqual(left.maxX, right.minX)
-        XCTAssertEqual(right.maxX, odd.maxX)
+        XCTAssertEqual(left, CGRect(x: 100, y: 50, width: 755, height: 901))
+        XCTAssertEqual(right, CGRect(x: 855, y: 50, width: 756, height: 901))
+        let top = WindowPosition.tile(.full, .top).frame(in: odd)
+        let bottom = WindowPosition.tile(.full, .bottom).frame(in: odd)
+        XCTAssertEqual(bottom, CGRect(x: 100, y: 50, width: 1511, height: 450))
+        XCTAssertEqual(top, CGRect(x: 100, y: 500, width: 1511, height: 451))
     }
 
     func testThirdsSitAtTheEdges() {
-        XCTAssertEqual(WindowPosition.leftThird.frame(in: visible), CGRect(x: 0, y: 0, width: 504, height: 945))
-        XCTAssertEqual(WindowPosition.rightThird.frame(in: visible), CGRect(x: 1008, y: 0, width: 504, height: 945))
+        XCTAssertEqual(WindowPosition.tile(.leftThird, .full).frame(in: visible), CGRect(x: 0, y: 0, width: 504, height: 944))
+        XCTAssertEqual(WindowPosition.tile(.rightThird, .full).frame(in: visible), CGRect(x: 1008, y: 0, width: 504, height: 944))
     }
 
-    func testPressingAgainGoesFromHalfToThirdAndBack() {
-        XCTAssertEqual(WindowPosition.leftHalf.repeated(after: nil), .leftHalf)
-        XCTAssertEqual(WindowPosition.leftHalf.repeated(after: .leftHalf), .leftThird)
-        XCTAssertEqual(WindowPosition.leftHalf.repeated(after: .leftThird), .leftHalf)
-        XCTAssertEqual(WindowPosition.rightHalf.repeated(after: .rightHalf), .rightThird)
-        XCTAssertEqual(WindowPosition.rightHalf.repeated(after: .leftHalf), .rightHalf)
-        XCTAssertEqual(WindowPosition.fill.repeated(after: .fill), .fill)
+    func testTopIsTheUpperHalfInAppKitCoordinates() {
+        XCTAssertEqual(WindowPosition.tile(.leftHalf, .top).frame(in: visible), CGRect(x: 0, y: 472, width: 756, height: 472))
+        XCTAssertEqual(WindowPosition.tile(.rightThird, .bottom).frame(in: visible), CGRect(x: 1008, y: 0, width: 504, height: 472))
     }
 
     func testFillUsesTheWholeArea() {
@@ -42,7 +83,7 @@ final class WindowLayoutTests: XCTestCase {
 
     func testCenterIsCenteredAndSmaller() {
         let frame = WindowPosition.center.frame(in: visible)
-        XCTAssertEqual(frame.size, CGSize(width: 1008, height: 709))
+        XCTAssertEqual(frame.size, CGSize(width: 1008, height: 708))
         XCTAssertEqual(frame.midX, visible.midX, accuracy: 1)
         XCTAssertEqual(frame.midY, visible.midY, accuracy: 1)
     }

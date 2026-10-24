@@ -32,7 +32,7 @@ final class HyperKeyLogicTests: XCTestCase {
 
     func testHyperArrowMovesTheWindow() {
         _ = press(Self.hyperDown)
-        XCTAssertEqual(press(Self.leftArrowDown), .moveWindow(.leftHalf))
+        XCTAssertEqual(press(Self.leftArrowDown), .moveWindow(.left))
         XCTAssertEqual(press(Self.leftArrowUp), .swallow)
     }
 

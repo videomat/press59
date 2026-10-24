@@ -27,7 +27,7 @@ enum HyperKeyAction: Equatable {
     /// Drop it and open (or hide) the app.
     case openApp(URL)
     /// Drop it and move the front window.
-    case moveWindow(WindowPosition)
+    case moveWindow(WindowArrow)
 
     /// Whether the event should still reach other apps.
     var passesEvent: Bool {
@@ -73,8 +73,8 @@ struct HyperKeyState {
 
         // Act on the first key-down only; repeats and key-ups of a shortcut are dropped too.
         let acts = event.isDown && !event.isRepeat
-        if movesWindows, let keyCode = event.keyCode, let position = WindowPosition(keyCode: keyCode) {
-            return acts ? .moveWindow(position) : .swallow
+        if movesWindows, let keyCode = event.keyCode, let arrow = WindowArrow(keyCode: keyCode) {
+            return acts ? .moveWindow(arrow) : .swallow
         }
         if event.character == Self.settingsKey {
             return acts ? .openSettings : .swallow

@@ -45,7 +45,7 @@ struct SettingsView: View {
                 Toggle("Hold Caps Lock to show your shortcuts", isOn: $store.showsCheatSheet)
                 Toggle("Caps Lock + arrow keys move windows", isOn: $store.movesWindows)
             } footer: {
-                Text("Hold Caps Lock and press a key to open an app. Other keys are sent as ⌃⌥⇧⌘ + key. Tap Caps Lock on its own to turn capitals on or off. With Caps Lock + ← → ↑ ↓, the front window takes the left or right half of the screen (press again for a third), fills it, or sits centered.\n\nMenu bar icon hidden? Hold Caps Lock and press , or open Press59 again to get back here.")
+                Text("Hold Caps Lock and press a key to open an app. Other keys are sent as ⌃⌥⇧⌘ + key. Tap Caps Lock on its own to turn capitals on or off. Caps Lock + ← or → puts the front window on that half of the screen, and again on a third. Then ↑ or ↓ for the top or bottom of it. On its own, ↑ fills the screen and ↓ centers the window.\n\nMenu bar icon hidden? Hold Caps Lock and press , or open Press59 again to get back here.")
             }
 
             Section("Shortcuts") {
