@@ -78,7 +78,11 @@ struct SettingsView: View {
                         }
                     }
                 }
-                Button("Add App…", action: chooseApp)
+                HStack {
+                    Button("Add App…", action: chooseApp)
+                    Button("Add Apps from Dock", action: store.addDockApps)
+                        .disabled(store.dockAppsToAdd.isEmpty)
+                }
             }
         }
         .formStyle(.grouped)

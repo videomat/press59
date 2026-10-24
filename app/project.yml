@@ -57,6 +57,7 @@ targets:
       - path: Press59Tests
       - path: Press59/HyperKeyLogic.swift
       - path: Press59/KeyMappings.swift
+      - path: Press59/KeySuggestions.swift
       - path: Press59/WindowLayout.swift
     configFiles:
       Debug: Config/Signing.local.xcconfig

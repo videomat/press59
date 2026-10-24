@@ -7,6 +7,10 @@ struct AppBinding: Identifiable, Codable, Hashable {
     var appURL: URL
 
     var appName: String {
+        Self.name(of: appURL)
+    }
+
+    static func name(of appURL: URL) -> String {
         FileManager.default.displayName(atPath: appURL.path)
             .replacingOccurrences(of: ".app", with: "")
     }
@@ -60,9 +64,6 @@ enum AppIconCache {
 }
 
 final class BindingStore: ObservableObject {
-    static let availableKeys: [String] =
-        "abcdefghijklmnopqrstuvwxyz0123456789".map(String.init)
-
     private static let bindingsKey = "bindings"
     private static let hidesFrontmostAppKey = "hidesFrontmostApp"
     private static let quickTapTogglesCapsLockKey = "quickTapTogglesCapsLock"
@@ -109,14 +110,24 @@ final class BindingStore: ObservableObject {
 
     func freeKeys(including key: String? = nil) -> [String] {
         let taken = Set(bindings.map(\.key))
-        return Self.availableKeys.filter { !taken.contains($0) || $0 == key }
+        return KeySuggestions.availableKeys.filter { !taken.contains($0) || $0 == key }
     }
 
     func add(appURL: URL) {
-        let name = FileManager.default.displayName(atPath: appURL.path).lowercased()
-        let free = freeKeys()
-        guard let key = name.map(String.init).first(where: free.contains) ?? free.first else { return }
+        let taken = Set(bindings.map(\.key))
+        guard let key = KeySuggestions.key(for: AppBinding.name(of: appURL), taken: taken) ?? freeKeys().first else { return }
         bindings.append(AppBinding(key: key, appURL: appURL))
+    }
+
+    /// Dock apps without a shortcut yet, each given a free letter from its name.
+    var dockAppsToAdd: [AppBinding] {
+        let bound = Set(bindings.map(\.appURL.standardizedFileURL))
+        return Self.suggestedBindings(for: DockApps.urls().filter { !bound.contains($0.standardizedFileURL) },
+                                      taken: Set(bindings.map(\.key)))
+    }
+
+    func addDockApps() {
+        bindings += dockAppsToAdd
     }
 
     func remove(_ binding: AppBinding) {
@@ -128,16 +139,35 @@ final class BindingStore: ObservableObject {
         UserDefaults.standard.set(data, forKey: Self.bindingsKey)
     }
 
-    /// Seeds a couple of common shortcuts on first launch when the apps are installed.
+    /// Shortcuts for the apps in the Dock on first launch, so Press59 works right away.
     private static func starterBindings() -> [AppBinding] {
-        let candidates = [
-            ("c", "com.google.Chrome"),
-            ("s", "com.tinyspeck.slackmacgap"),
-            ("f", "com.apple.finder"),
-        ]
-        return candidates.compactMap { key, bundleID in
-            NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID)
-                .map { AppBinding(key: key, appURL: $0) }
+        suggestedBindings(for: DockApps.urls(), taken: [])
+    }
+
+    private static func suggestedBindings(for appURLs: [URL], taken: Set<String>) -> [AppBinding] {
+        let keys = KeySuggestions.keys(for: appURLs.map(AppBinding.name(of:)), taken: taken)
+        return zip(keys, appURLs).compactMap { key, appURL in
+            key.map { AppBinding(key: $0, appURL: appURL) }
+        }
+    }
+}
+
+/// The apps kept in the Dock, read from the Dock's preferences.
+enum DockApps {
+    /// Launchers that are always in the Dock and not worth a shortcut.
+    private static let skipped: Set<String> = ["com.apple.apps.launcher", "com.apple.launchpad.launcher"]
+
+    static func urls() -> [URL] {
+        guard let tiles = CFPreferencesCopyAppValue("persistent-apps" as CFString, "com.apple.dock" as CFString)
+                as? [[String: Any]] else { return [] }
+        return tiles.compactMap { tile in
+            guard let tileData = tile["tile-data"] as? [String: Any],
+                  let fileData = tileData["file-data"] as? [String: Any],
+                  let string = fileData["_CFURLString"] as? String,
+                  let url = URL(string: string), url.isFileURL,
+                  FileManager.default.fileExists(atPath: url.path),
+                  !skipped.contains(Bundle(url: url)?.bundleIdentifier ?? "") else { return nil }
+            return url
         }
     }
 }
