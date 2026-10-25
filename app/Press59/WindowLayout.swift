@@ -1,11 +1,12 @@
 import CoreGraphics
 
-/// An arrow key pressed with Hyper.
-enum WindowArrow: Equatable {
+/// A key that moves the front window when pressed with Hyper: an arrow, or Return to fill the screen.
+enum WindowKey: Equatable {
     case left
     case right
     case up
     case down
+    case fill
 
     init?(keyCode: Int64) {
         switch keyCode {
@@ -13,6 +14,7 @@ enum WindowArrow: Equatable {
         case 124: self = .right
         case 126: self = .up
         case 125: self = .down
+        case 36, 76: self = .fill // Return, and Enter on the numeric keypad
         default: return nil
         }
     }
@@ -42,32 +44,30 @@ enum WindowPosition: Equatable {
     static let leftHalf = WindowPosition.tile(.leftHalf, .full)
     static let rightHalf = WindowPosition.tile(.rightHalf, .full)
 
-    /// Where `arrow` puts a window that Press59 just moved to `previous` (nil if it didn't, or the
+    /// Where `key` puts a window that Press59 just moved to `previous` (nil if it didn't, or the
     /// window has moved since). The arrows combine, so a few presses reach any half, third or quarter:
     /// - ← / →: that half of the screen; again, a third. A top or bottom row is kept.
-    /// - ↑ / ↓ on a window at one side: the top or bottom of that column; again, the whole column.
-    /// - ↑ otherwise: fill the screen; again, its top half.
-    /// - ↓ otherwise: center the window; again, the bottom half of the screen.
-    static func next(_ arrow: WindowArrow, after previous: WindowPosition?) -> WindowPosition {
-        var column: Column?
+    /// - ↑ / ↓: the top or bottom of that column, or of the screen; again, the whole column.
+    /// - Return: fill the screen, from anywhere; again, center the window.
+    static func next(_ key: WindowKey, after previous: WindowPosition?) -> WindowPosition {
+        var column = Column.full
         var row = Row.full
         if case let .tile(previousColumn, previousRow) = previous {
             column = previousColumn
             row = previousRow
         }
-        let isAtSide = column != nil && column != .full
 
-        switch arrow {
+        switch key {
+        case .fill:
+            return previous == .fill ? .center : .fill
         case .left:
             return .tile(column == .leftHalf ? .leftThird : .leftHalf, row)
         case .right:
             return .tile(column == .rightHalf ? .rightThird : .rightHalf, row)
         case .up:
-            if isAtSide, let column { return .tile(column, row == .top ? .full : .top) }
-            return previous == .fill ? .tile(.full, .top) : .fill
+            return .tile(column, row == .top ? .full : .top)
         case .down:
-            if isAtSide, let column { return .tile(column, row == .bottom ? .full : .bottom) }
-            return previous == .center ? .tile(.full, .bottom) : .center
+            return .tile(column, row == .bottom ? .full : .bottom)
         }
     }
 

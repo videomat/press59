@@ -20,7 +20,7 @@ final class CheatSheetController {
         isShown = true
 
         // Rebuilt each time, so it always shows the current shortcuts.
-        let content = NSHostingView(rootView: CheatSheetView(bindings: store.bindings))
+        let content = NSHostingView(rootView: CheatSheetView(bindings: store.bindings, movesWindows: store.movesWindows))
         panel.contentView = content
         panel.setContentSize(content.fittingSize)
         center(panel)
@@ -71,6 +71,7 @@ final class CheatSheetController {
 
 struct CheatSheetView: View {
     let bindings: [AppBinding]
+    var movesWindows = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -78,6 +79,14 @@ struct CheatSheetView: View {
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(Color.primary.opacity(0.55))
             ShortcutKeyboard(bindings: bindings)
+            if movesWindows {
+                HStack(spacing: 24) {
+                    Text("⇪ ← → ↑ ↓  Move the window")
+                    Text("⇪ ↩  Fill the screen")
+                }
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Color.primary.opacity(0.55))
+            }
         }
         .padding(20)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))

@@ -20,9 +20,9 @@ struct GuideContent: View {
                 GuideSection(title: "See your shortcuts", keys: ["⇪"]) {
                     Text("Hold Caps Lock on its own for half a second and your shortcuts show up on a keyboard. Let go to close it.")
                 }
-                GuideSection(title: "Move windows", keys: ["⇪", "←", "→", "↑", "↓"]) {
+                GuideSection(title: "Move windows", keys: ["⇪", "←", "→", "↑", "↓", "↩"]) {
                     VStack(alignment: .leading, spacing: 14) {
-                        Text("Hold Caps Lock and press arrows. They build on each other: ← or → picks a side, again for a third, then ↑ or ↓ for the top or bottom of it.")
+                        Text("Hold Caps Lock and press arrows. They build on each other: ← or → picks a side, again for a third, then ↑ or ↓ for the top or bottom of it. Return fills the screen from anywhere; again, it centers the window.")
                         Grid(horizontalSpacing: 18, verticalSpacing: 14) {
                             ForEach(0..<2) { row in
                                 GridRow {
@@ -52,10 +52,10 @@ struct GuideContent: View {
         (["←", "←"], .tile(.leftThird, .full)),
         (["←", "↑"], .tile(.leftHalf, .top)),
         (["←", "←", "↓"], .tile(.leftThird, .bottom)),
-        (["↑"], .fill),
-        (["↑", "↑"], .tile(.full, .top)),
-        (["↓"], .center),
-        (["↓", "↓"], .tile(.full, .bottom)),
+        (["↑"], .tile(.full, .top)),
+        (["↓"], .tile(.full, .bottom)),
+        (["↩"], .fill),
+        (["↩", "↩"], .center),
     ]
 }
 

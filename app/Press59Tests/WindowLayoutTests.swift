@@ -4,16 +4,18 @@ final class WindowLayoutTests: XCTestCase {
     /// A 1512 × 944 usable screen area, in AppKit coordinates.
     private let visible = CGRect(x: 0, y: 0, width: 1512, height: 944)
 
-    private func press(_ arrows: WindowArrow...) -> WindowPosition? {
-        arrows.reduce(nil) { previous, arrow in WindowPosition.next(arrow, after: previous) }
+    private func press(_ keys: WindowKey...) -> WindowPosition? {
+        keys.reduce(nil) { previous, key in WindowPosition.next(key, after: previous) }
     }
 
-    func testArrowKeys() {
-        XCTAssertEqual(WindowArrow(keyCode: 123), .left)
-        XCTAssertEqual(WindowArrow(keyCode: 124), .right)
-        XCTAssertEqual(WindowArrow(keyCode: 126), .up)
-        XCTAssertEqual(WindowArrow(keyCode: 125), .down)
-        XCTAssertNil(WindowArrow(keyCode: 0))
+    func testWindowKeys() {
+        XCTAssertEqual(WindowKey(keyCode: 123), .left)
+        XCTAssertEqual(WindowKey(keyCode: 124), .right)
+        XCTAssertEqual(WindowKey(keyCode: 126), .up)
+        XCTAssertEqual(WindowKey(keyCode: 125), .down)
+        XCTAssertEqual(WindowKey(keyCode: 36), .fill)
+        XCTAssertEqual(WindowKey(keyCode: 76), .fill)
+        XCTAssertNil(WindowKey(keyCode: 0))
     }
 
     // MARK: - Combining arrows
@@ -39,18 +41,26 @@ final class WindowLayoutTests: XCTestCase {
         XCTAssertEqual(press(.left, .up, .right), .tile(.rightHalf, .top))
     }
 
-    func testUpFillsThenTopHalf() {
-        XCTAssertEqual(press(.up), .fill)
-        XCTAssertEqual(press(.up, .up), .tile(.full, .top))
-        XCTAssertEqual(press(.up, .up, .up), .fill)
-        XCTAssertEqual(press(.up, .up, .left), .tile(.leftHalf, .top))
+    func testUpAndDownPickAHalfOfTheScreen() {
+        XCTAssertEqual(press(.up), .tile(.full, .top))
+        XCTAssertEqual(press(.down), .tile(.full, .bottom))
+        XCTAssertEqual(press(.up, .up), .fill)
+        XCTAssertEqual(press(.up, .down), .tile(.full, .bottom))
+        XCTAssertEqual(press(.up, .left), .tile(.leftHalf, .top))
     }
 
-    func testDownCentersThenBottomHalf() {
-        XCTAssertEqual(press(.down), .center)
-        XCTAssertEqual(press(.down, .down), .tile(.full, .bottom))
-        XCTAssertEqual(press(.down, .down, .down), .center)
-        XCTAssertEqual(press(.down, .left), .leftHalf)
+    func testReturnFillsFromAnywhereThenCenters() {
+        XCTAssertEqual(press(.fill), .fill)
+        XCTAssertEqual(press(.left, .fill), .fill)
+        XCTAssertEqual(press(.left, .left, .up, .fill), .fill)
+        XCTAssertEqual(press(.fill, .fill), .center)
+        XCTAssertEqual(press(.fill, .fill, .fill), .fill)
+    }
+
+    func testArrowsCombineAfterReturn() {
+        XCTAssertEqual(press(.left, .fill, .up), .tile(.full, .top))
+        XCTAssertEqual(press(.fill, .fill, .left), .leftHalf)
+        XCTAssertEqual(press(.fill, .fill, .down), .tile(.full, .bottom))
     }
 
     // MARK: - Frames

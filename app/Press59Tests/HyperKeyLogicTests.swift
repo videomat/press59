@@ -41,6 +41,18 @@ final class HyperKeyLogicTests: XCTestCase {
         XCTAssertEqual(press(Self.leftArrowDown, movesWindows: false), .addHyperModifiers)
     }
 
+    func testHyperReturnFillsTheScreen() {
+        let returnDown = HyperKeyEvent(isDown: true, character: "\r", keyCode: 36)
+        _ = press(Self.hyperDown)
+        XCTAssertEqual(press(returnDown), .moveWindow(.fill))
+        XCTAssertEqual(press(HyperKeyEvent(isDown: false, character: "\r", keyCode: 36)), .swallow)
+        XCTAssertEqual(press(returnDown, movesWindows: false), .addHyperModifiers)
+    }
+
+    func testReturnWithoutHyperPassesThrough() {
+        XCTAssertEqual(press(HyperKeyEvent(isDown: true, character: "\r", keyCode: 36)), .passThrough)
+    }
+
     func testArrowWithoutHyperPassesThrough() {
         XCTAssertEqual(press(Self.leftArrowDown), .passThrough)
     }

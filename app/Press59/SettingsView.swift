@@ -152,7 +152,7 @@ struct GeneralSettingsView: View {
             } header: {
                 Text("Windows")
             } footer: {
-                Text("← or → for a half, again for a third, then ↑ or ↓ for the top or bottom. When off, Caps Lock + arrows are sent as ⌃⌥⇧⌘ + arrow.")
+                Text("← or → for a half, again for a third, then ↑ or ↓ for the top or bottom. Return fills the screen; again, it centers the window. When off, these keys are sent as ⌃⌥⇧⌘ + key.")
             }
 
             Section {

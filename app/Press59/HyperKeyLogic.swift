@@ -27,7 +27,7 @@ enum HyperKeyAction: Equatable {
     /// Drop it and open (or hide) the app.
     case openApp(URL)
     /// Drop it and move the front window.
-    case moveWindow(WindowArrow)
+    case moveWindow(WindowKey)
 
     /// Whether the event should still reach other apps.
     var passesEvent: Bool {
@@ -37,7 +37,7 @@ enum HyperKeyAction: Equatable {
 
 /// The Hyper key's decision-making, separate from the event tap so it can be tested:
 /// - Hyper + an assigned key opens that app; Hyper + `settingsKey` opens Settings.
-/// - Hyper + an arrow key moves the front window (optional).
+/// - Hyper + an arrow key or Return moves the front window (optional).
 /// - Hyper + any other key gets ⌃⌥⇧⌘.
 /// - Pressing and releasing Hyper with no other key in between is a quick tap.
 /// - Holding Hyper on its own for `cheatSheetDelay` shows the cheat sheet instead.
@@ -73,8 +73,8 @@ struct HyperKeyState {
 
         // Act on the first key-down only; repeats and key-ups of a shortcut are dropped too.
         let acts = event.isDown && !event.isRepeat
-        if movesWindows, let keyCode = event.keyCode, let arrow = WindowArrow(keyCode: keyCode) {
-            return acts ? .moveWindow(arrow) : .swallow
+        if movesWindows, let keyCode = event.keyCode, let windowKey = WindowKey(keyCode: keyCode) {
+            return acts ? .moveWindow(windowKey) : .swallow
         }
         if event.character == Self.settingsKey {
             return acts ? .openSettings : .swallow
