@@ -15,7 +15,7 @@ final class CheatSheetController {
     }
 
     func show() {
-        let panel = self.panel ?? makePanel()
+        let panel = self.panel ?? NSPanel.overlay()
         self.panel = panel
         isShown = true
 
@@ -46,7 +46,20 @@ final class CheatSheetController {
         })
     }
 
-    private func makePanel() -> NSPanel {
+    /// Centers the panel on the screen with the mouse pointer, where you're most likely looking.
+    private func center(_ panel: NSPanel) {
+        let mouse = NSEvent.mouseLocation
+        guard let screen = NSScreen.screens.first(where: { NSMouseInRect(mouse, $0.frame, false) }) ?? NSScreen.main else { return }
+        let visible = screen.visibleFrame
+        let size = panel.frame.size
+        panel.setFrameOrigin(NSPoint(x: visible.midX - size.width / 2, y: visible.midY - size.height / 2))
+    }
+}
+
+extension NSPanel {
+    /// A panel for the cheat sheet and the keystroke overlay: above everything, on every Space and
+    /// over full-screen apps, and never taking focus or clicks.
+    static func overlay() -> NSPanel {
         let panel = NSPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: true)
         panel.isOpaque = false
         panel.backgroundColor = .clear
@@ -57,15 +70,6 @@ final class CheatSheetController {
         panel.isReleasedWhenClosed = false
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
         return panel
-    }
-
-    /// Centers the panel on the screen with the mouse pointer, where you're most likely looking.
-    private func center(_ panel: NSPanel) {
-        let mouse = NSEvent.mouseLocation
-        guard let screen = NSScreen.screens.first(where: { NSMouseInRect(mouse, $0.frame, false) }) ?? NSScreen.main else { return }
-        let visible = screen.visibleFrame
-        let size = panel.frame.size
-        panel.setFrameOrigin(NSPoint(x: visible.midX - size.width / 2, y: visible.midY - size.height / 2))
     }
 }
 

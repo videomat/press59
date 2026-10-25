@@ -69,6 +69,7 @@ final class BindingStore: ObservableObject {
     private static let quickTapTogglesCapsLockKey = "quickTapTogglesCapsLock"
     private static let showsCheatSheetKey = "showsCheatSheet"
     private static let movesWindowsKey = "movesWindows"
+    private static let showsKeystrokesKey = "showsKeystrokes"
 
     @Published var bindings: [AppBinding] {
         didSet { saveBindings() }
@@ -90,6 +91,11 @@ final class BindingStore: ObservableObject {
         didSet { UserDefaults.standard.set(movesWindows, forKey: Self.movesWindowsKey) }
     }
 
+    /// Whether each shortcut is shown on screen as it's pressed, for recordings and demos.
+    @Published var showsKeystrokes: Bool {
+        didSet { UserDefaults.standard.set(showsKeystrokes, forKey: Self.showsKeystrokesKey) }
+    }
+
     /// Whether Press59 had no saved shortcuts at launch, i.e. it's running for the first time.
     let isFirstLaunch: Bool
 
@@ -108,6 +114,7 @@ final class BindingStore: ObservableObject {
         quickTapTogglesCapsLock = defaults.object(forKey: Self.quickTapTogglesCapsLockKey) as? Bool ?? true
         showsCheatSheet = defaults.object(forKey: Self.showsCheatSheetKey) as? Bool ?? true
         movesWindows = defaults.object(forKey: Self.movesWindowsKey) as? Bool ?? true
+        showsKeystrokes = defaults.bool(forKey: Self.showsKeystrokesKey)
         if isFirstLaunch {
             // Saved now, so the next launch isn't a first launch even if nothing is added.
             saveBindings()

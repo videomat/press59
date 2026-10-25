@@ -5,6 +5,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let store = BindingStore()
     lazy var monitor = HyperKeyMonitor(store: store)
     lazy var cheatSheet = CheatSheetController(store: store)
+    let keystrokeOverlay = KeystrokeOverlayController()
     lazy var dockSuggestions = DockSuggestionsController(store: store)
     /// Checks press59.win/appcast.xml for new versions and installs them (Sparkle).
     let updaterController = SPUStandardUpdaterController(
@@ -18,6 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         monitor.onOpenSettings = { [weak self] in self?.showSettings() }
         monitor.onShowCheatSheet = { [weak self] in self?.cheatSheet.show() }
         monitor.onHideCheatSheet = { [weak self] in self?.cheatSheet.hide() }
+        monitor.onShowKeystroke = { [weak self] in self?.keystrokeOverlay.show($0) }
         monitor.start()
         // On first launch, offer shortcuts for the Dock apps, then explain how it works.
         // The guide also shows once to people updating from before it existed.
@@ -118,6 +120,9 @@ private struct MenuContent: View {
         if !store.bindings.isEmpty {
             Divider()
         }
+        // Here too, to turn it on quickly before a recording.
+        Toggle("Show Shortcuts on Screen", isOn: $store.showsKeystrokes)
+        Divider()
         Button("Settings…", action: showSettings)
             .keyboardShortcut(",")
         Button("How Press59 Works…", action: showGuide)

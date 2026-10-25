@@ -10,6 +10,7 @@ import IOKit.hidsystem
 /// - Hyper + any other key is sent on as ⌃⌥⇧⌘ + key, so other apps can use it as a shortcut.
 /// - A quick tap of Caps Lock on its own still toggles Caps Lock (optional).
 /// - Holding Caps Lock on its own shows the cheat sheet of shortcuts (optional).
+/// - Each shortcut can be shown on screen as it's pressed, for recordings (optional).
 /// - Hyper + the arrow keys move the front window to halves, thirds and quarters of the screen, and
 ///   Hyper + Return fills the screen (optional).
 final class HyperKeyMonitor: ObservableObject {
@@ -26,6 +27,8 @@ final class HyperKeyMonitor: ObservableObject {
     /// Called to show or hide the cheat sheet while Hyper is held on its own.
     var onShowCheatSheet: (() -> Void)?
     var onHideCheatSheet: (() -> Void)?
+    /// Called after a shortcut is pressed, to show it on screen.
+    var onShowKeystroke: ((Keystroke) -> Void)?
 
     private let store: BindingStore
     private var tap: CFMachPort?
@@ -195,19 +198,27 @@ final class HyperKeyMonitor: ObservableObject {
         )
         updateCheatSheet(for: keyEvent)
 
+        var keystroke: Keystroke?
         switch action {
         case .passThrough, .swallow:
             break
         case .addHyperModifiers:
             event.flags.formUnion(Self.hyperFlags)
+            keystroke = Keystroke.hyper(character: keyEvent.character, keyCode: keyEvent.keyCode)
         case .toggleCapsLock:
             toggleCapsLock()
         case .openSettings:
             onOpenSettings?()
+            keystroke = .settings
         case .openApp(let appURL):
-            toggle(appURL)
+            let hid = toggle(appURL)
+            keystroke = .app(key: keyEvent.character ?? "", appURL: appURL, hid: hid)
         case .moveWindow(let key):
-            moveFrontWindow(key)
+            keystroke = moveFrontWindow(key).map { .window(key, $0) }
+        }
+        if let keystroke, keyEvent.isDown, !keyEvent.isRepeat, store.showsKeystrokes {
+            // Shown after the tap returns, so drawing it never holds up the keyboard.
+            DispatchQueue.main.async { [weak self] in self?.onShowKeystroke?(keystroke) }
         }
         return action.passesEvent ? Unmanaged.passUnretained(event) : nil
     }
@@ -250,34 +261,37 @@ final class HyperKeyMonitor: ObservableObject {
 
     // MARK: - Apps
 
-    private func toggle(_ appURL: URL) {
+    /// Opens the app, or hides it if it's in front. Returns whether it was hidden.
+    private func toggle(_ appURL: URL) -> Bool {
         let bundleID = Bundle(url: appURL)?.bundleIdentifier
         if store.hidesFrontmostApp,
            let frontmost = NSWorkspace.shared.frontmostApplication,
            frontmost.bundleIdentifier == bundleID {
             frontmost.hide()
-            return
+            return true
         }
         let configuration = NSWorkspace.OpenConfiguration()
         configuration.activates = true
         NSWorkspace.shared.openApplication(at: appURL, configuration: configuration)
+        return false
     }
 
     // MARK: - Windows
 
     /// Moves the front app's focused window within the screen it's mostly on. Arrows combine with
     /// the previous move (see `WindowPosition.next`) while the window stays where Press59 put it.
-    private func moveFrontWindow(_ key: WindowKey) {
+    /// Returns where it went, or nil if there's no window to move.
+    private func moveFrontWindow(_ key: WindowKey) -> WindowPosition? {
         guard let app = NSWorkspace.shared.frontmostApplication,
-              let mainScreen = NSScreen.screens.first else { return }
+              let mainScreen = NSScreen.screens.first else { return nil }
         let appElement = AXUIElementCreateApplication(app.processIdentifier)
         var value: CFTypeRef?
         guard AXUIElementCopyAttributeValue(appElement, kAXFocusedWindowAttribute as CFString, &value) == .success,
-              let value, CFGetTypeID(value) == AXUIElementGetTypeID() else { return }
+              let value, CFGetTypeID(value) == AXUIElementGetTypeID() else { return nil }
         let window = value as! AXUIElement
 
         let mainHeight = mainScreen.frame.height
-        guard let current = frame(of: window) else { return }
+        guard let current = frame(of: window) else { return nil }
         var previous: WindowPosition?
         if let lastMove, CFEqual(lastMove.window, window), Self.isSameFrame(lastMove.frame, current) {
             previous = lastMove.position
@@ -294,6 +308,7 @@ final class HyperKeyMonitor: ObservableObject {
         setPosition(target.origin, of: window)
         // Remember where it actually ended up: apps may keep a minimum size or snap to a grid.
         lastMove = frame(of: window).map { (window, position, $0) }
+        return position
     }
 
     /// Frames within a point of each other, allowing for rounding.

@@ -19,6 +19,7 @@
 		AE11D6801FFC4997EFE9E187 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C4C99BFD5A74E322E6E5AD /* SettingsView.swift */; };
 		B15A93B2327F410150390A73 /* WindowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29CF8FB461B6D6F1F59E8592 /* WindowLayout.swift */; };
 		B38FD9CDD0401E507ED188D5 /* KeySuggestions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D3C0445869B8503F30776E2 /* KeySuggestions.swift */; };
+		B3FF5C065EC3DAAE3F763923 /* KeystrokeOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7702732AA9009D20B332275A /* KeystrokeOverlay.swift */; };
 		B921B193A4DAA432D4CF193A /* KeySuggestions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D3C0445869B8503F30776E2 /* KeySuggestions.swift */; };
 		BC7D6415106F58D6D8FE5A1D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ED81F208484C5BC2D33C02E1 /* Assets.xcassets */; };
 		BCBBAB82067B35FD27EB892B /* HyperKeyMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39E89B0E2BDD477B11BE1BA2 /* HyperKeyMonitor.swift */; };
@@ -40,6 +41,7 @@
 		4EE11AC1308E1D1C98F36EE9 /* DockSuggestions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DockSuggestions.swift; sourceTree = "<group>"; };
 		5D61CE2A3370F89816AD0529 /* KeyMappingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyMappingsTests.swift; sourceTree = "<group>"; };
 		7391306DABA6694662C1BE22 /* Press59App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Press59App.swift; sourceTree = "<group>"; };
+		7702732AA9009D20B332275A /* KeystrokeOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeystrokeOverlay.swift; sourceTree = "<group>"; };
 		7E7F41E9930E71769229BA86 /* KeySuggestionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeySuggestionsTests.swift; sourceTree = "<group>"; };
 		7FE3AC64B7BE937D92BD7534 /* WindowLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowLayoutTests.swift; sourceTree = "<group>"; };
 		856909680C83B2AF4485DFB7 /* Press59Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Press59Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -96,6 +98,7 @@
 				39E89B0E2BDD477B11BE1BA2 /* HyperKeyMonitor.swift */,
 				C93783A08346FDFA5BD884A2 /* Info.plist */,
 				28EF5611067019B206CDDD85 /* KeyMappings.swift */,
+				7702732AA9009D20B332275A /* KeystrokeOverlay.swift */,
 				1D3C0445869B8503F30776E2 /* KeySuggestions.swift */,
 				7391306DABA6694662C1BE22 /* Press59App.swift */,
 				F5C4C99BFD5A74E322E6E5AD /* SettingsView.swift */,
@@ -228,6 +231,7 @@
 				BCBBAB82067B35FD27EB892B /* HyperKeyMonitor.swift in Sources */,
 				62E43AE436DEDCCDA3B3C6B8 /* KeyMappings.swift in Sources */,
 				B38FD9CDD0401E507ED188D5 /* KeySuggestions.swift in Sources */,
+				B3FF5C065EC3DAAE3F763923 /* KeystrokeOverlay.swift in Sources */,
 				7FE78F866A6BF6BE6C8403D5 /* Press59App.swift in Sources */,
 				AE11D6801FFC4997EFE9E187 /* SettingsView.swift in Sources */,
 				B15A93B2327F410150390A73 /* WindowLayout.swift in Sources */,

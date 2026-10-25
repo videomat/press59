@@ -156,6 +156,14 @@ struct GeneralSettingsView: View {
             }
 
             Section {
+                Toggle("Show shortcuts on screen as you press them", isOn: $store.showsKeystrokes)
+            } header: {
+                Text("Recording")
+            } footer: {
+                Text("For screen recordings, streams and demos: a badge at the bottom of the screen shows each Caps Lock shortcut, so viewers can follow along.")
+            }
+
+            Section {
                 Button("How Press59 Works…", action: showGuide)
                     .buttonStyle(.link)
             } footer: {
