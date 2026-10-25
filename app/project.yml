@@ -22,7 +22,7 @@ targets:
     info:
       path: Press59/Info.plist
       properties:
-        CFBundleDisplayName: Press59
+        CFBundleDisplayName: $(PRODUCT_NAME)
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSUIElement: true
@@ -43,6 +43,12 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
       configs:
         Debug:
+          # Its own app to macOS, so Xcode builds get their own Accessibility entry and settings
+          # instead of taking over the installed Press59's (whose signature they don't match).
+          # System Settings lists apps by file name, hence the name.
+          PRODUCT_BUNDLE_IDENTIFIER: win.press59.app.debug
+          PRODUCT_NAME: Press59 Debug
+          PRODUCT_MODULE_NAME: Press59
           CODE_SIGN_STYLE: Automatic
           CODE_SIGN_IDENTITY: Apple Development
         Release:

@@ -54,7 +54,7 @@ Set your Apple Developer Team ID in that file, then generate and open the projec
 cd app && xcodegen generate && open Press59.xcodeproj
 ```
 
-Run the **Press59** scheme. A rebuilt app may need its Accessibility permission granted again.
+Run the **Press59** scheme. Debug builds are a separate app to macOS, “Press59 Debug.app” (`win.press59.app.debug`), with their own Accessibility entry and settings, so they don’t take over an installed Press59. A rebuilt app may need its Accessibility permission granted again.
 
 The repository also holds the [press59.win](https://press59.win) website and the release tooling; see [MAINTAINING.md](MAINTAINING.md).
 

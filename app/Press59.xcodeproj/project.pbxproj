@@ -353,7 +353,9 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 0.3.0;
-				PRODUCT_BUNDLE_IDENTIFIER = win.press59.app;
+				PRODUCT_BUNDLE_IDENTIFIER = win.press59.app.debug;
+				PRODUCT_MODULE_NAME = Press59;
+				PRODUCT_NAME = "Press59 Debug";
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.0;
 			};
