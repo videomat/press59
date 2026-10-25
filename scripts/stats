@@ -39,7 +39,8 @@ const queries = {
       COUNT(*) AS allTime,
       SUM(source = 'homepage') AS homepage,
       SUM(source = 'direct') AS direct,
-      SUM(source = 'external') AS external
+      SUM(source = 'external') AS external,
+      SUM(source = 'update') AS updates
     FROM downloads WHERE ${people} GROUP BY country ORDER BY allTime DESC, recent DESC LIMIT 15`,
   sources: `SELECT CASE WHEN source = 'external' THEN COALESCE(referrer_host, 'external') ELSE source END AS source,
       SUM(downloaded_at >= ${since(days)}) AS recent,
@@ -92,7 +93,7 @@ console.log(`  Filtered as bots (all time): ${data.bots[0]?.bots ?? 0}`);
 
 table('Last 14 days', data.daily, ['day', 'downloads']);
 table(`Versions (last ${days} days)`, data.versions, ['version', 'downloads']);
-table('Countries', data.countries, ['country', 'recent', 'allTime', 'homepage', 'direct', 'external'],
-  ['', `${days}d`, 'all', 'homepage', 'direct', 'external']);
+table('Countries', data.countries, ['country', 'recent', 'allTime', 'homepage', 'direct', 'external', 'updates'],
+  ['', `${days}d`, 'all', 'homepage', 'direct', 'external', 'updates']);
 table('Sources', data.sources, ['source', 'recent', 'allTime'], ['', `${days}d`, 'all']);
 table('Channels (?ref= tag, or the site that sent a homepage visitor)', data.channels, ['channel', 'recent', 'allTime'], ['', `${days}d`, 'all']);
