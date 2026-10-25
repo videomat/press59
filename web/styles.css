@@ -65,11 +65,12 @@ p { margin: 0; }
 .caps-symbol { font-family: system-ui, -apple-system, sans-serif; font-size: 34px; font-weight: 600; line-height: 1; }
 .cap-letter { width: 88px; height: 88px; font-size: 36px; }
 .plus { font-size: 40px; font-weight: 300; color: var(--faint); }
-.window { flex: 1 1 320px; min-width: 0; max-width: 520px; background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: 0 24px 48px -24px rgba(20, 21, 24, 0.35); }
+/* A Mac window is about 16:10, like the screens it sits on. */
+.window { flex: 1 1 320px; min-width: 0; max-width: 520px; aspect-ratio: 16 / 10; display: flex; flex-direction: column; background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: 0 24px 48px -24px rgba(20, 21, 24, 0.35); }
 .window-bar { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid #E6E4DF; background: #FAFAF8; }
 .dot { width: 12px; height: 12px; border-radius: 50%; }
 .window-title { margin-left: 12px; font-size: 13px; color: var(--muted); font-weight: 600; }
-.window-body { height: 120px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 14px; color: var(--faint); }
+.window-body { flex: 1; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 14px; color: var(--faint); }
 
 /* How it works */
 .dark { background: var(--ink); color: var(--ground); }
@@ -83,22 +84,43 @@ p { margin: 0; }
 .step-window { width: 64px; height: 64px; border-radius: 14px; background: var(--ground); color: var(--ink); display: flex; align-items: center; justify-content: center; }
 
 /* Keyboard */
-.keyboard { display: flex; flex-direction: column; gap: 12px; overflow-x: auto; padding: 4px 0 12px; }
+.keyboard { --key: 76px; display: flex; flex-direction: column; gap: 12px; overflow-x: auto; width: fit-content; max-width: 100%; margin: 0 auto; padding: 4px 0 12px; }
 .key-row { display: flex; gap: 10px; }
-.key { flex: 0 0 auto; width: 76px; height: 76px; flex-direction: column; gap: 4px; cursor: pointer; font-size: 20px; padding: 0; }
+.key { flex: 0 0 auto; width: var(--key); height: var(--key); flex-direction: column; gap: 4px; cursor: pointer; font-size: 20px; padding: 0; }
 .key.unassigned { background: #ECEBE7; }
 .key[aria-pressed="true"] { background: var(--accent); border-color: var(--accent-dark); box-shadow: 0 4px 0 var(--accent-dark); }
 .key:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--cap-shadow); }
 .key-app { font-family: var(--display); font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70px; letter-spacing: -0.02em; }
 .key.unassigned .key-app { color: var(--faint); }
 .key[aria-pressed="true"] .key-app { color: var(--ink); }
-.readout { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 24px 28px; background: #fff; border: 1px solid var(--line); border-radius: 16px; }
+/* On phones, shrink the keys so all ten in a row fit the screen; the readout names the app. */
+@media (max-width: 760px) {
+  .keyboard { --key: min(76px, calc((100vw - 48px - 9 * 5px) / 10)); gap: 8px; }
+  .key-row { gap: 5px; }
+  .key { height: calc(var(--key) * 1.3); font-size: 15px; border-radius: 8px; box-shadow: 0 3px 0 var(--cap-shadow); }
+  .key[aria-pressed="true"] { box-shadow: 0 3px 0 var(--accent-dark); }
+  .key-app { display: none; }
+}
+/* Fixed width, wide enough for "Not assigned yet", so the box does not jump as keys are clicked. */
+.readout { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; width: 720px; max-width: 100%; margin-inline: auto; padding: 24px 28px; background: #fff; border: 1px solid var(--line); border-radius: 16px; }
 .readout-cap { width: 196px; height: 72px; padding: 0 18px; }
 .readout-cap .caps-symbol { font-size: 28px; }
 .readout-cap .caps-label { font-size: 18px; }
 .readout-letter { width: 72px; height: 72px; font-size: 30px; }
 .plus-sm { font-size: 32px; font-weight: 300; color: var(--faint); }
+.readout-result { display: flex; align-items: center; gap: 16px; }
 .readout-app { font-size: 28px; font-weight: 800; }
+/* On phones, shrink the example so it stays on one line; a long app name wraps within itself. */
+@media (max-width: 480px) {
+  .readout { flex-wrap: nowrap; min-height: 96px; padding: 12px; gap: 6px; }
+  .readout .readout-cap { flex: none; width: auto; height: 44px; gap: 6px; padding: 0 8px; border-radius: 9px; }
+  .readout .readout-cap .caps-symbol { font-size: 16px; }
+  .readout .readout-cap .caps-label { font-size: 11px; letter-spacing: 0; white-space: nowrap; }
+  .readout-letter { flex: none; width: 44px; height: 44px; font-size: 20px; border-radius: 9px; }
+  .readout .plus-sm { font-size: 20px; }
+  .readout-result { gap: 6px; min-width: 0; }
+  .readout-app { font-size: 17px; line-height: 1.15; }
+}
 
 /* Windows */
 #windows.section { padding-top: 32px; }

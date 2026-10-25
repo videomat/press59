@@ -4,10 +4,11 @@ const apps = {
   x: 'Xcode', z: 'Zoom', w: 'WhatsApp', p: 'Photos', l: 'Lightroom', a: 'Arc',
   g: 'GarageBand', o: 'Obsidian', k: 'Keynote',
 };
+// Row indents are in key widths, so the stagger scales with the keys on phones.
 const rows = [
   { keys: 'qwertyuiop', indent: 0 },
-  { keys: 'asdfghjkl', indent: 28 },
-  { keys: 'zxcvbnm', indent: 64 },
+  { keys: 'asdfghjkl', indent: 0.37 },
+  { keys: 'zxcvbnm', indent: 0.84 },
 ];
 
 const keyboard = document.getElementById('keyboard');
@@ -25,7 +26,7 @@ function select(letter) {
 for (const row of rows) {
   const rowElement = document.createElement('div');
   rowElement.className = 'key-row';
-  rowElement.style.paddingLeft = `${row.indent}px`;
+  rowElement.style.paddingLeft = `calc(${row.indent} * var(--key))`;
   for (const letter of row.keys) {
     const app = apps[letter];
     const key = document.createElement('button');
