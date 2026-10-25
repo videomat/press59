@@ -6,5 +6,6 @@
   "size" : 3412000,
   "sha256" : "local-development-sample",
   "edSignature" : "local-development-sample",
+  "notes" : "A sample release for the local website.\n\n- **Bold** and `code` work.\n- So do [links](https://press59.win).",
   "publishedAt" : "2026-10-11T12:00:00Z"
 }

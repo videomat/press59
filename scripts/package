@@ -109,6 +109,12 @@ if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
     exit 1
 fi
 
+# ./scripts/release publishes these with the release, for the app's update window.
+if [[ ! -s "release-notes/${version}.md" ]]; then
+    print "Missing release notes: write release-notes/${version}.md and commit it with the version bump."
+    exit 1
+fi
+
 if [[ -e "$release_path" ]]; then
     print "A release candidate for $version already exists: $release_path"
     print "Release it with ./scripts/release, or delete build/release to rebuild."

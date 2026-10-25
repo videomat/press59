@@ -18,7 +18,7 @@ usage() {
     print "Usage: ./scripts/release [--yes]"
     print
     print "Uploads the release candidate in build/release to R2, then tags it v<version>."
-    print "--yes  Skip the confirmation."
+    print -- "--yes  Skip the confirmation."
 }
 
 wrangler() {
@@ -57,6 +57,12 @@ version="$(awk -F ': ' '/MARKETING_VERSION:/ { print $2; exit }' "$project_yaml"
 tag="v${version}"
 release_filename="Press59-${version}.dmg"
 release_path="$release_directory/$release_filename"
+notes_path="release-notes/${version}.md"
+
+if [[ ! -s "$notes_path" ]]; then
+    print "Missing release notes: write $notes_path, commit it and package again."
+    exit 1
+fi
 
 if [[ ! -f "$release_path" || ! -f "$manifest_path" || ! -f "$commit_path" ]]; then
     print "No release candidate for $version in build/release."
@@ -109,6 +115,8 @@ if [[ "$assume_yes" != true ]]; then
 fi
 
 plutil -replace publishedAt -string "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$manifest_path"
+# The notes Sparkle shows in its update window (see functions/appcast.xml.js).
+plutil -replace notes -string "$(<"$notes_path")" "$manifest_path"
 
 print "Uploading $release_filename..."
 wrangler r2 object put "$bucket/releases/$release_filename" \

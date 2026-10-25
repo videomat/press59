@@ -36,6 +36,7 @@ export async function latestRelease(env) {
     sha256: release.sha256 ?? null,
     edSignature: isNonEmptyString(release.edSignature) ? release.edSignature.trim() : null,
     publishedAt: release.publishedAt ?? null,
+    notes: isNonEmptyString(release.notes) ? release.notes : null,
   };
 }
 

@@ -1,5 +1,6 @@
 // GET /appcast.xml — the Sparkle update feed the app checks, built from the release in latest.json.
 
+import { notesHTML } from './_shared/notes.js';
 import { latestRelease, methodNotAllowed, unavailable } from './_shared/releases.js';
 
 const MINIMUM_SYSTEM_VERSION = '14.0';
@@ -23,6 +24,9 @@ export async function onRequest({ request, env }) {
 
   const origin = new URL(request.url).origin;
   const pubDate = new Date(release.publishedAt ?? Date.now()).toUTCString();
+  // The notes Sparkle shows in its update window. The HTML is escaped, so it can't contain "]]>".
+  const description = release.notes === null ? '' : `
+      <description><![CDATA[${notesHTML(release.notes)}]]></description>`;
   const body = `<?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
   <channel>
@@ -30,7 +34,7 @@ export async function onRequest({ request, env }) {
     <link>${xml(origin)}/</link>
     <item>
       <title>Press59 ${xml(release.version)}</title>
-      <pubDate>${xml(pubDate)}</pubDate>
+      <pubDate>${xml(pubDate)}</pubDate>${description}
       <sparkle:version>${xml(release.build)}</sparkle:version>
       <sparkle:shortVersionString>${xml(release.version)}</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>${MINIMUM_SYSTEM_VERSION}</sparkle:minimumSystemVersion>

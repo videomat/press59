@@ -8,6 +8,7 @@ Notes for building, releasing and running Press59's website and downloads. For w
 | `web/` | The press59.win homepage (static HTML, no build step) |
 | `functions/` | Cloudflare Pages functions: `/download`, `/latest.json` and `/appcast.xml` |
 | `migrations/` | D1 schema for the private download analytics |
+| `release-notes/` | Notes for each version, shown in the app's update window and pasted into GitHub releases |
 | `scripts/` | Version, release, website, analytics and icon tooling |
 | `dev/` | Sample release for the local website |
 
@@ -69,11 +70,11 @@ You also need a Developer ID Application certificate in your Keychain and `DEVEL
 
 ### Each release
 
-Releasing is two steps with a test in between: package, test, release. On a clean `main`:
+Releasing is two steps with a test in between: package, test, release. On a clean `main`, bump the version and write `release-notes/<version>.md`: a line on what's new and a short list, in Markdown (paragraphs, `- ` lists, `**bold**`, `` `code` `` and links). Commit both, then package:
 
 ```bash
 ./scripts/version patch
-git commit -am "Release version $(awk '/MARKETING_VERSION:/ { print $2; exit }' app/project.yml)"
+git add -A && git commit -m "Release version $(awk '/MARKETING_VERSION:/ { print $2; exit }' app/project.yml)"
 ./scripts/package
 ```
 
@@ -85,7 +86,9 @@ Test that DMG: install it, grant Accessibility, and try your shortcuts. If it's 
 ./scripts/release
 ```
 
-`release` checks the DMG is the unchanged file `package` built from the current commit, uploads it and then `latest.json` to R2, tags `v<version>`, and pushes `main` and the tag when there's a remote. The site switches to the new version as soon as `latest.json` is uploaded.
+`release` checks the DMG is the unchanged file `package` built from the current commit, adds the release notes to `latest.json`, uploads the DMG and then `latest.json` to R2, tags `v<version>`, and pushes `main` and the tag when there's a remote. The site switches to the new version as soon as `latest.json` is uploaded. Paste the same notes into the GitHub release for the tag.
+
+To fix the notes of the live release, edit its file, commit it and run `./scripts/release-notes`. It replaces only the notes in the live `latest.json`, so the DMG and its signature stay as they are.
 
 If testing finds a problem, fix it, bump the version again, and run `package` for a new candidate.
 

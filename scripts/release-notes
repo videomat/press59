@@ -1,0 +1,79 @@
+#!/bin/zsh
+# Publishes release-notes/<version>.md for the version that's live, without releasing again: it
+# replaces the notes in latest.json on R2, which the app's update window shows (functions/appcast.xml.js).
+# Use it to fix a typo, or to add notes to a release made without them. ./scripts/release adds them itself.
+# Usage: ./scripts/release-notes [--yes]
+
+project_root="${0:A:h:h}"
+cd "$project_root"
+
+set -euo pipefail
+
+bucket="press59-releases"
+assume_yes=false
+
+usage() {
+    print "Usage: ./scripts/release-notes [--yes]"
+    print
+    print "Replaces the notes of the live release with release-notes/<its version>.md."
+    print -- "--yes  Skip the confirmation."
+}
+
+wrangler() {
+    npx --yes wrangler@4 "$@"
+}
+
+if [[ $# -gt 1 ]]; then
+    usage
+    exit 1
+fi
+
+if [[ $# -eq 1 ]]; then
+    case "$1" in
+        --yes) assume_yes=true ;;
+        --help|-h) usage; exit 0 ;;
+        *) usage; exit 1 ;;
+    esac
+fi
+
+if ! command -v npx >/dev/null 2>&1; then
+    print "Node.js is required to update the release with Wrangler."
+    exit 1
+fi
+
+staging_root="$(mktemp -d "${TMPDIR:-/tmp}/press59-notes.XXXXXX")"
+trap '/bin/rm -rf -- "$staging_root"' EXIT
+manifest_path="$staging_root/latest.json"
+
+print "Reading the live latest.json..."
+wrangler r2 object get "$bucket/latest.json" --file "$manifest_path" --remote >/dev/null
+
+version="$(plutil -extract version raw "$manifest_path")"
+notes_path="release-notes/${version}.md"
+if [[ ! -s "$notes_path" ]]; then
+    print "The live release is $version, but $notes_path is missing or empty."
+    exit 1
+fi
+
+print
+print "Notes for Press59 $version, from $notes_path:"
+print
+cat "$notes_path"
+print
+
+if [[ "$assume_yes" != true ]]; then
+    read "answer?Publish them to the update feed? [y/N] "
+    if [[ "$answer" != [yY] && "$answer" != [yY][eE][sS] ]]; then
+        print "Nothing published."
+        exit 0
+    fi
+fi
+
+plutil -replace notes -string "$(<"$notes_path")" "$manifest_path"
+wrangler r2 object put "$bucket/latest.json" \
+    --file "$manifest_path" \
+    --content-type "application/json" \
+    --cache-control "no-cache" \
+    --remote
+
+print "Published. The update feed shows them within 5 minutes: https://press59.win/appcast.xml"
