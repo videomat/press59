@@ -187,7 +187,7 @@ final class HyperKeyMonitor: ObservableObject {
             isDown: type == .keyDown,
             isRepeat: event.getIntegerValueField(.keyboardEventAutorepeat) != 0,
             isHyperKey: event.getIntegerValueField(.keyboardEventKeycode) == Self.f18KeyCode,
-            character: character(of: event),
+            character: character(of: event, latinFallback: state.isHyperDown),
             keyCode: event.getIntegerValueField(.keyboardEventKeycode)
         )
         let action = state.handle(
@@ -251,12 +251,20 @@ final class HyperKeyMonitor: ObservableObject {
         onHideCheatSheet?()
     }
 
-    private func character(of event: CGEvent) -> String? {
+    /// The typed character, lowercased. With `latinFallback` (only while Hyper is held, so ordinary
+    /// typing isn't slowed), a letter that can't be a shortcut, e.g. Cyrillic, becomes the one the key
+    /// has in your Latin layout, as macOS does for ⌘ shortcuts.
+    private func character(of event: CGEvent, latinFallback: Bool) -> String? {
         var length = 0
         var chars = [UniChar](repeating: 0, count: 4)
         event.keyboardGetUnicodeString(maxStringLength: chars.count, actualStringLength: &length, unicodeString: &chars)
         guard length > 0 else { return nil }
-        return String(utf16CodeUnits: chars, count: length).lowercased()
+        let typed = String(utf16CodeUnits: chars, count: length).lowercased()
+        guard latinFallback, !KeySuggestions.availableKeys.contains(typed),
+              typed.unicodeScalars.allSatisfy(CharacterSet.letters.contains),
+              let latin = KeyboardLayout.latinCharacter(for: UInt16(event.getIntegerValueField(.keyboardEventKeycode))),
+              KeySuggestions.availableKeys.contains(latin) else { return typed }
+        return latin
     }
 
     // MARK: - Apps

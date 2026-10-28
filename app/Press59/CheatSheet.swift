@@ -141,8 +141,11 @@ final class CheatSheetController {
                 return nil
             }
             let modifiers = event.modifierFlags.intersection([.command, .control, .option])
-            if modifiers.isEmpty, let key = event.charactersIgnoringModifiers?.lowercased(),
-               KeySuggestions.availableKeys.contains(key) {
+            // In a non-Latin layout, the letter the key has in your Latin one, as for shortcuts.
+            let typed = event.charactersIgnoringModifiers?.lowercased()
+            let key = typed.flatMap { KeySuggestions.availableKeys.contains($0) ? $0 : nil }
+                ?? KeyboardLayout.latinCharacter(for: event.keyCode)
+            if modifiers.isEmpty, let key, KeySuggestions.availableKeys.contains(key) {
                 showMenu(for: key)
                 return nil
             }
@@ -340,13 +343,17 @@ struct ShortcutKeyboard: View {
     var showsNumberRow = false
     var onTap: (String) -> Void = { _ in }
 
-    /// Keyboard rows, each with how far it's indented on a real keyboard (in key widths).
-    private static let rows: [(keys: String, indent: CGFloat)] = [
-        ("1234567890", 0),
-        ("qwertyuiop", 0.5),
-        ("asdfghjkl", 0.75),
-        ("zxcvbnm" + HyperKeyState.settingsKey, 1.25),
-    ]
+    /// Keyboard rows as the active layout has them (Colemak, AZERTY…), each with how far it's
+    /// indented on a real keyboard (in key widths).
+    private static var rows: [(keys: String, indent: CGFloat)] {
+        let letters = KeyboardLayout.currentLetterRows()
+        return [
+            ("1234567890", 0),
+            (letters[0], 0.5),
+            (letters[1], 0.75),
+            (letters[2] + HyperKeyState.settingsKey, 1.25),
+        ]
+    }
     static let keySize: CGFloat = 64
     private static let spacing: CGFloat = 8
 
