@@ -28,7 +28,9 @@ Press59 is a small, free menu bar app for macOS that turns Caps Lock into an app
 
 Settings are in the menu bar icon. If macOS hides the icon on a crowded menu bar, hold Caps Lock and press `,`, or open Press59 again.
 
-If you use another Hyper key tool (Raycast's Hyper Key, Hyperkey, Karabiner-Elements), turn off its Caps Lock mapping so only one app owns the key.
+If you use another Hyper key tool (Raycast's Hyper Key, Hyperkey, Karabiner-Elements), turn off its Caps Lock mapping so only one app owns the key. The same goes for Caps Lock as Backspace, which many Colemak users set up: Press59 needs the key for itself.
+
+Press59 follows your keyboard layout: on Colemak, AZERTY or Dvorak, a shortcut is the letter the key types, and the cheat sheet shows your layout. In a non-Latin layout such as Russian or Greek, shortcuts use the letters of your Latin layout, as ⌘ shortcuts do.
 
 ## Privacy
 
