@@ -65,6 +65,7 @@ targets:
       - path: Press59/KeyMappings.swift
       - path: Press59/KeySuggestions.swift
       - path: Press59/WindowLayout.swift
+      - path: Press59/UsageStats.swift
     configFiles:
       Debug: Config/Signing.local.xcconfig
       Release: Config/Signing.local.xcconfig
