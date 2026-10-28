@@ -27,8 +27,8 @@ final class HyperKeyMonitor: ObservableObject {
     /// Called to show or hide the cheat sheet while Hyper is held on its own.
     var onShowCheatSheet: (() -> Void)?
     var onHideCheatSheet: (() -> Void)?
-    /// Called after a shortcut is pressed, to show it on screen.
-    var onShowKeystroke: ((Keystroke) -> Void)?
+    /// Called after each shortcut, to show it on screen and count it.
+    var onShortcut: ((Keystroke) -> Void)?
 
     private let store: BindingStore
     private var tap: CFMachPort?
@@ -216,9 +216,9 @@ final class HyperKeyMonitor: ObservableObject {
         case .moveWindow(let key):
             keystroke = moveFrontWindow(key).map { .window(key, $0) }
         }
-        if let keystroke, keyEvent.isDown, !keyEvent.isRepeat, store.showsKeystrokes {
-            // Shown after the tap returns, so drawing it never holds up the keyboard.
-            DispatchQueue.main.async { [weak self] in self?.onShowKeystroke?(keystroke) }
+        if let keystroke, keyEvent.isDown, !keyEvent.isRepeat {
+            // After the tap returns, so showing or counting it never holds up the keyboard.
+            DispatchQueue.main.async { [weak self] in self?.onShortcut?(keystroke) }
         }
         return action.passesEvent ? Unmanaged.passUnretained(event) : nil
     }

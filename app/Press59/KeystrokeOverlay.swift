@@ -131,7 +131,8 @@ struct KeystrokeView: View {
 }
 
 /// The shortcut as one small key-shaped chip, e.g. "⇪C", with Caps Lock in Press59's orange.
-private struct KeyChip: View {
+/// Also used on the month card.
+struct KeyChip: View {
     let key: String
     let tint: Color
 

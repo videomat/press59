@@ -6,6 +6,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     lazy var monitor = HyperKeyMonitor(store: store)
     lazy var cheatSheet = CheatSheetController(store: store)
     let keystrokeOverlay = KeystrokeOverlayController()
+    let usage = UsageStore()
+    lazy var monthWindow = MonthWindowController(usage: usage, store: store)
     lazy var dockSuggestions = DockSuggestionsController(store: store)
     /// Checks press59.win/appcast.xml for new versions and installs them (Sparkle).
     let updaterController = SPUStandardUpdaterController(
@@ -19,7 +21,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         monitor.onOpenSettings = { [weak self] in self?.showSettings() }
         monitor.onShowCheatSheet = { [weak self] in self?.cheatSheet.show() }
         monitor.onHideCheatSheet = { [weak self] in self?.cheatSheet.hide() }
-        monitor.onShowKeystroke = { [weak self] in self?.keystrokeOverlay.show($0) }
+        monitor.onShortcut = { [weak self] keystroke in
+            guard let self else { return }
+            if store.keepsUsageStats { usage.record(keystroke) }
+            if store.showsKeystrokes { keystrokeOverlay.show(keystroke) }
+        }
         monitor.start()
         // On first launch, offer shortcuts for the Dock apps, then explain how it works.
         // The guide also shows once to people updating from before it existed.
@@ -59,8 +65,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             settingsWindow = SettingsWindow.make(
                 store: store,
                 monitor: monitor,
+                usage: usage,
                 updater: updaterController.updater,
                 showGuide: showGuide,
+                showMonth: { [weak self] in self?.showMonth() },
                 showDockSuggestions: showDockSuggestions
             )
         }
@@ -80,6 +88,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
         guideWindow?.makeKeyAndOrderFront(nil)
     }
+
+    /// "Your October with Press59", the month card to share.
+    func showMonth() {
+        monthWindow.show()
+    }
 }
 
 @main
@@ -93,7 +106,8 @@ struct Press59App: App {
                 monitor: appDelegate.monitor,
                 updater: appDelegate.updaterController.updater,
                 showSettings: appDelegate.showSettings,
-                showGuide: appDelegate.showGuide
+                showGuide: appDelegate.showGuide,
+                showMonth: appDelegate.showMonth
             )
         } label: {
             Image("MenuBarIcon")
@@ -108,6 +122,7 @@ private struct MenuContent: View {
     let updater: SPUUpdater
     let showSettings: () -> Void
     let showGuide: () -> Void
+    let showMonth: () -> Void
 
     var body: some View {
         if !monitor.isTrusted {
@@ -125,6 +140,7 @@ private struct MenuContent: View {
         Divider()
         Button("Settings…", action: showSettings)
             .keyboardShortcut(",")
+        Button("Your Month…", action: showMonth)
         Button("How Press59 Works…", action: showGuide)
         Button("Check for Updates…") {
             // Sparkle's window opens behind other apps unless the menu bar app comes forward.

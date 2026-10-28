@@ -10,8 +10,10 @@ enum SettingsWindow {
     static func make(
         store: BindingStore,
         monitor: HyperKeyMonitor,
+        usage: UsageStore,
         updater: SPUUpdater,
         showGuide: @escaping () -> Void,
+        showMonth: @escaping () -> Void,
         showDockSuggestions: @escaping () -> Void
     ) -> NSWindow {
         let tabs = NSTabViewController()
@@ -20,7 +22,7 @@ enum SettingsWindow {
             "Shortcuts", symbol: "keyboard",
             ShortcutsSettingsView(store: store, monitor: monitor, showDockSuggestions: showDockSuggestions)
         ))
-        tabs.addTabViewItem(item("General", symbol: "gearshape", GeneralSettingsView(store: store, showGuide: showGuide)))
+        tabs.addTabViewItem(item("General", symbol: "gearshape", GeneralSettingsView(store: store, usage: usage, showGuide: showGuide, showMonth: showMonth)))
         tabs.addTabViewItem(item("About", symbol: "info.circle", AboutSettingsView(updater: updater, showGuide: showGuide)))
 
         let window = NSWindow(contentViewController: tabs)
@@ -127,7 +129,10 @@ struct ShortcutsSettingsView: View {
 
 struct GeneralSettingsView: View {
     @ObservedObject var store: BindingStore
+    let usage: UsageStore
     let showGuide: () -> Void
+    let showMonth: () -> Void
+    @State private var confirmsReset = false
     @State private var launchesAtLogin = SMAppService.mainApp.status == .enabled
 
     var body: some View {
@@ -161,6 +166,23 @@ struct GeneralSettingsView: View {
                 Text("Recording")
             } footer: {
                 Text("For screen recordings, streams and demos: a badge at the bottom of the screen shows each Caps Lock shortcut, so viewers can follow along.")
+            }
+
+            Section {
+                Toggle("Count how often you use each shortcut", isOn: $store.keepsUsageStats)
+                HStack {
+                    Button("Show Your Month…", action: showMonth)
+                    Button("Reset Counts…") { confirmsReset = true }
+                }
+            } header: {
+                Text("Your Month")
+            } footer: {
+                Text("Your Month, in the menu bar menu, shows them as a card you can share. Only counts, kept on this Mac, never what you type.")
+            }
+            .confirmationDialog("Reset all counts?", isPresented: $confirmsReset) {
+                Button("Reset Counts", role: .destructive, action: usage.reset)
+            } message: {
+                Text("Your Month in Press59 starts again from zero.")
             }
 
             Section {
