@@ -18,7 +18,7 @@ struct GuideContent: View {
                     Text("Hold Caps Lock and press an app’s letter. Already open, it comes to the front; not running, it opens. The same keys again hide it. Pick the letters in Settings.")
                 }
                 GuideSection(title: "See your shortcuts", keys: ["⇪"]) {
-                    Text("Hold Caps Lock on its own for half a second and your shortcuts show up on a keyboard. Let go to close it.")
+                    Text("Hold Caps Lock on its own for half a second and your shortcuts show up on a keyboard. Let go to close it, or click a key to give it an app: the one you’re in, another open app, or any app. Once it’s open, you can also type a key. Escape closes it.")
                 }
                 GuideSection(title: "Move windows", keys: ["⇪", "←", "→", "↑", "↓", "↩"]) {
                     VStack(alignment: .leading, spacing: 14) {

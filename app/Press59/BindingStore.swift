@@ -158,6 +158,14 @@ final class BindingStore: ObservableObject {
         }
     }
 
+    /// Gives `key` to the app, replacing the key's app and moving the app off any other key.
+    func assign(appURL: URL, to key: String) {
+        let app = appURL.standardizedFileURL
+        var updated = bindings.filter { $0.key != key && $0.appURL.standardizedFileURL != app }
+        updated.append(AppBinding(key: key, appURL: appURL))
+        bindings = updated
+    }
+
     func remove(_ binding: AppBinding) {
         bindings.removeAll { $0.id == binding.id }
     }
