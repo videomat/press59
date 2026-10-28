@@ -129,12 +129,9 @@ private struct MenuContent: View {
             Text("Waiting for Accessibility access…")
             Divider()
         }
-        ForEach(store.bindings.sorted { $0.key < $1.key }) { binding in
-            Text("⇪ \(binding.key.uppercased())   \(binding.appName)")
-        }
-        if !store.bindings.isEmpty {
-            Divider()
-        }
+        // A pointer to the cheat sheet rather than a list of every shortcut, which would only grow.
+        Text(store.showsCheatSheet ? "Hold ⇪ Caps Lock to see your shortcuts" : "Your shortcuts are in Settings")
+        Divider()
         // Here too, to turn it on quickly before a recording.
         Toggle("Show Shortcuts on Screen", isOn: $store.showsKeystrokes)
         Divider()
