@@ -15,6 +15,9 @@ Press59 is a small, free menu bar app for macOS that turns Caps Lock into an app
 - **Caps Lock still works.** Tap it on its own to turn capitals on or off.
 - **A Hyper key for everything else.** Keys without an app are sent as ⌃⌥⇧⌘ + key, so you can use Caps Lock as a modifier in Raycast, Keyboard Maestro, window managers and app shortcuts.
 - **Nothing leaks through.** Shortcuts are caught before any app sees them, so no stray letter gets typed.
+- **Shows your shortcuts on screen.** Optional, for screen recordings, streams and demos: a badge shows what each shortcut did and the keys that did it.
+- **Your Month in Press59.** A card of your month (app switches, top apps, streak) to post or share, with earlier months a click away. The counts stay on your Mac.
+- **Set shortcuts from the cheat sheet.** Hold Caps Lock to see your shortcuts on a keyboard, then click a key to give it the app you're in, another open app, or any app.
 - **Stays out of the way.** No Dock icon, no window. Lives in the menu bar and can start at login.
 
 ## Getting started
@@ -29,7 +32,7 @@ If you use another Hyper key tool (Raycast's Hyper Key, Hyperkey, Karabiner-Elem
 
 ## Privacy
 
-Press59 has no account and no analytics. Its only network request is a daily check of press59.win for updates, which sends nothing but its version; turn it off in Settings. Installing an update counts as a download, just like one from the website (version and country, no IP address). It needs Accessibility access to see keystrokes so it can catch its shortcuts before other apps do; it doesn't record or store what you type. Your shortcuts are saved locally in its preferences.
+Press59 has no account and no analytics. Its only network request is a daily check of press59.win for updates, which sends nothing but its version; turn it off in Settings. Installing an update counts as a download, just like one from the website (version and country, no IP address). It needs Accessibility access to see keystrokes so it can catch its shortcuts before other apps do; it doesn't record or store what you type. Your shortcuts are saved locally in its preferences, and so are the counts for Your Month in Press59 (how often each shortcut was used, by day and hour, never what you type); turn counting off or reset it in Settings.
 
 ## How it works
 
