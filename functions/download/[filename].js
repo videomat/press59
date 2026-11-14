@@ -1,4 +1,4 @@
-// GET /download/<filename> — the current release's DMG under its own name, for the app's updater.
+// GET /download/<filename> — a release's DMG under its own name, for the app's updater.
 
 import { serveRelease } from '../download.js';
 

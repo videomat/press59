@@ -8,21 +8,36 @@ export function onRequest(context) {
   return serveRelease(context);
 }
 
-// Streams the current release. With `filename`, only if it's still that file, so an update
-// signed for one version is never served another version's DMG.
+// A release's DMG as scripts/package names it, e.g. Press59-0.3.0.dmg.
+const RELEASE_FILENAME = /^Press59-([0-9A-Za-z][0-9A-Za-z.-]*)\.dmg$/;
+
+function notFound() {
+  return new Response('Not found', { status: 404, headers: { 'cache-control': 'no-store' } });
+}
+
+// An earlier release, which stays in R2 under its own name. An app that was offered it as an
+// update, or read a cached /appcast.xml, may still ask for it after a newer one is published.
+function earlierRelease(filename) {
+  const version = RELEASE_FILENAME.exec(filename)?.[1];
+  return version ? { version, key: `releases/${filename}`, filename } : null;
+}
+
+// Streams the current release. With `filename`, that file and no other, so an update signed for
+// one version is never served another version's DMG.
 export async function serveRelease({ request, env, waitUntil }, filename = null) {
   if (request.method !== 'GET' && request.method !== 'HEAD') return methodNotAllowed();
 
-  const release = await latestRelease(env);
-  if (release === null) return unavailable();
-  if (filename !== null && filename !== release.filename) {
-    return new Response('Not found', { status: 404, headers: { 'cache-control': 'no-store' } });
+  let release = await latestRelease(env);
+  if (filename !== null && filename !== release?.filename) {
+    release = earlierRelease(filename);
+    if (release === null) return notFound();
   }
+  if (release === null) return unavailable();
 
   const object = request.method === 'HEAD'
     ? await env.RELEASES.head(release.key)
     : await env.RELEASES.get(release.key, { onlyIf: request.headers, range: request.headers });
-  if (object === null) return unavailable();
+  if (object === null) return filename === null ? unavailable() : notFound();
 
   const headers = new Headers();
   object.writeHttpMetadata(headers);
