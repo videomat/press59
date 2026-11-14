@@ -35,6 +35,8 @@ final class HyperKeyMonitor: ObservableObject {
     private var runLoopSource: CFRunLoopSource?
     private var trustTimer: Timer?
     private var cheatSheetTimer: Timer?
+    /// Runs while Hyper is held, to notice a release the tap never saw. See `watchForMissedRelease`.
+    private var releaseTimer: Timer?
     /// The window Press59 last moved, where to, and the frame it ended up with.
     private var lastMove: (window: AXUIElement, position: WindowPosition, frame: CGRect)?
     private var state = HyperKeyState()
@@ -71,8 +73,7 @@ final class HyperKeyMonitor: ObservableObject {
         }
         tap = nil
         runLoopSource = nil
-        state.reset()
-        endCheatSheet()
+        releaseHyper()
         if isRunning {
             setCapsLockRemapped(false)
         }
@@ -164,6 +165,10 @@ final class HyperKeyMonitor: ObservableObject {
             userInfo: Unmanaged.passUnretained(self).toOpaque()
         ) else { return false }
 
+        // Moving windows waits on other apps, on the thread the tap runs on. One that doesn't answer
+        // should hold up the keyboard for a second at most, not the default six.
+        AXUIElementSetMessagingTimeout(AXUIElementCreateSystemWide(), 1)
+
         let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
@@ -176,6 +181,9 @@ final class HyperKeyMonitor: ObservableObject {
         switch type {
         case .tapDisabledByTimeout, .tapDisabledByUserInput:
             if let tap { CGEvent.tapEnable(tap: tap, enable: true) }
+            // Keys pressed while the tap was off went by unseen, maybe Hyper's release among them.
+            // Without it every key would stay a shortcut, so let go unless Hyper is known to be down.
+            if !(releaseTimer != nil && Self.isHyperKeyPressed) { releaseHyper() }
             return Unmanaged.passUnretained(event)
         case .keyDown, .keyUp:
             break
@@ -197,6 +205,14 @@ final class HyperKeyMonitor: ObservableObject {
             appForKey: { [store] in store.binding(for: $0)?.appURL }
         )
         updateCheatSheet(for: keyEvent)
+        if keyEvent.isHyperKey, !keyEvent.isRepeat {
+            if keyEvent.isDown {
+                watchForMissedRelease()
+            } else {
+                releaseTimer?.invalidate()
+                releaseTimer = nil
+            }
+        }
 
         var keystroke: Keystroke?
         switch action {
@@ -213,14 +229,54 @@ final class HyperKeyMonitor: ObservableObject {
         case .openApp(let appURL):
             let hid = toggle(appURL)
             keystroke = .app(key: keyEvent.character ?? "", appURL: appURL, hid: hid)
+        // Windows are moved after the tap returns: that waits on other apps, and a tap that takes
+        // too long to answer is turned off by macOS.
         case .moveWindow(let key):
-            keystroke = moveFrontWindow(key).map { .window(key, $0) }
+            DispatchQueue.main.async { [weak self] in
+                guard let self, let position = self.moveFrontWindow(key) else { return }
+                self.onShortcut?(.window(key, position))
+            }
         }
         if let keystroke, keyEvent.isDown, !keyEvent.isRepeat {
             // After the tap returns, so showing or counting it never holds up the keyboard.
             DispatchQueue.main.async { [weak self] in self?.onShortcut?(keystroke) }
         }
         return action.passesEvent ? Unmanaged.passUnretained(event) : nil
+    }
+
+    // MARK: - Missed release
+
+    /// Whether macOS has the Caps Lock key (F18 once remapped) as physically down.
+    private static var isHyperKeyPressed: Bool {
+        CGEventSource.keyState(.hidSystemState, key: CGKeyCode(f18KeyCode))
+    }
+
+    /// The tap doesn't see every key: none while a password field has the keyboard (secure input),
+    /// and none while macOS has turned the tap off. If Hyper is let go then, it would stay held here
+    /// and every key typed afterwards would be a shortcut. So while it's held, check that it's
+    /// still down.
+    private func watchForMissedRelease() {
+        releaseTimer?.invalidate()
+        releaseTimer = nil
+        // Only when the key reads as down right after it was pressed: if it can't be read here,
+        // it would look let go straight away.
+        guard Self.isHyperKeyPressed else { return }
+        var timesUp = 0
+        let timer = Timer(timeInterval: 0.25, repeats: true) { [weak self] _ in
+            timesUp = Self.isHyperKeyPressed ? 0 : timesUp + 1
+            // Twice in a row, so a release that's only waiting its turn in the tap is handled first.
+            if timesUp >= 2 { self?.releaseHyper() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        releaseTimer = timer
+    }
+
+    /// Lets go of Hyper without a key-up.
+    private func releaseHyper() {
+        releaseTimer?.invalidate()
+        releaseTimer = nil
+        state.reset()
+        endCheatSheet()
     }
 
     // MARK: - Cheat sheet
