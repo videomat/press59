@@ -48,6 +48,9 @@ struct HyperKeyState {
     private(set) var isHyperDown = false
     /// Whether another key was pressed while Hyper was held, so releasing it isn't a quick tap.
     private var wasHyperUsed = false
+    /// Keys pressed while Hyper was held and not released yet, by key code, with what their
+    /// key-down got: `.swallow` or `.addHyperModifiers`.
+    private var heldKeys: [Int64: HyperKeyAction] = [:]
 
     mutating func handle(
         _ event: HyperKeyEvent,
@@ -68,9 +71,33 @@ struct HyperKeyState {
             return wasTap && quickTapTogglesCapsLock ? .toggleCapsLock : .swallow
         }
 
-        guard isHyperDown else { return .passThrough }
+        guard isHyperDown else {
+            // Still held from a shortcut after Hyper was let go: its repeats and key-up go the way
+            // its key-down did, so "c" isn't typed into the app that Hyper + C just opened.
+            guard let keyCode = event.keyCode, let held = heldKeys[keyCode] else { return .passThrough }
+            if event.isDown && !event.isRepeat {
+                // Pressed again, so its key-up was missed.
+                heldKeys[keyCode] = nil
+                return .passThrough
+            }
+            if !event.isDown { heldKeys[keyCode] = nil }
+            return held
+        }
         wasHyperUsed = true
 
+        let action = shortcutAction(for: event, movesWindows: movesWindows, appForKey: appForKey)
+        if let keyCode = event.keyCode {
+            heldKeys[keyCode] = event.isDown ? (action.passesEvent ? .addHyperModifiers : .swallow) : nil
+        }
+        return action
+    }
+
+    /// What a key does while Hyper is held.
+    private func shortcutAction(
+        for event: HyperKeyEvent,
+        movesWindows: Bool,
+        appForKey: (String) -> URL?
+    ) -> HyperKeyAction {
         // Act on the first key-down only; repeats and key-ups of a shortcut are dropped too.
         let acts = event.isDown && !event.isRepeat
         if movesWindows, let keyCode = event.keyCode, let windowKey = WindowKey(keyCode: keyCode) {
@@ -96,5 +123,6 @@ struct HyperKeyState {
     mutating func reset() {
         isHyperDown = false
         wasHyperUsed = false
+        heldKeys = [:]
     }
 }

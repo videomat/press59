@@ -22,8 +22,13 @@ final class HyperKeyLogicTests: XCTestCase {
     private static let hyperDown = HyperKeyEvent(isDown: true, isHyperKey: true)
     private static let hyperRepeat = HyperKeyEvent(isDown: true, isRepeat: true, isHyperKey: true)
     private static let hyperUp = HyperKeyEvent(isDown: false, isHyperKey: true)
-    private static func down(_ character: String) -> HyperKeyEvent { HyperKeyEvent(isDown: true, character: character) }
-    private static func up(_ character: String) -> HyperKeyEvent { HyperKeyEvent(isDown: false, character: character) }
+    private static func down(_ character: String) -> HyperKeyEvent { HyperKeyEvent(isDown: true, character: character, keyCode: keyCode(character)) }
+    private static func up(_ character: String) -> HyperKeyEvent { HyperKeyEvent(isDown: false, character: character, keyCode: keyCode(character)) }
+    private static func repeated(_ character: String) -> HyperKeyEvent {
+        HyperKeyEvent(isDown: true, isRepeat: true, character: character, keyCode: keyCode(character))
+    }
+    /// A made-up key code for each character, clear of the arrows and Return.
+    private static func keyCode(_ character: String) -> Int64 { 1000 + Int64(character.unicodeScalars.first!.value) }
 
     // MARK: - Moving windows
 
@@ -159,6 +164,41 @@ final class HyperKeyLogicTests: XCTestCase {
 
     func testKeysPassThroughAgainAfterHyperIsReleased() {
         _ = press(Self.hyperDown)
+        _ = press(Self.hyperUp)
+        XCTAssertEqual(press(Self.down("c")), .passThrough)
+    }
+
+    // MARK: - Keys still held after Hyper is released
+
+    func testShortcutKeyHeldAfterHyperIsNotTyped() {
+        _ = press(Self.hyperDown)
+        XCTAssertEqual(press(Self.down("c")), .openApp(chrome))
+        _ = press(Self.hyperUp)
+        XCTAssertEqual(press(Self.repeated("c")), .swallow)
+        XCTAssertEqual(press(Self.up("c")), .swallow)
+        XCTAssertEqual(press(Self.down("c")), .passThrough)
+        XCTAssertEqual(press(Self.up("c")), .passThrough)
+    }
+
+    func testUnassignedKeyHeldAfterHyperKeepsItsModifiers() {
+        _ = press(Self.hyperDown)
+        XCTAssertEqual(press(Self.down("j")), .addHyperModifiers)
+        _ = press(Self.hyperUp)
+        XCTAssertEqual(press(Self.repeated("j")), .addHyperModifiers)
+        XCTAssertEqual(press(Self.up("j")), .addHyperModifiers)
+        XCTAssertEqual(press(Self.down("j")), .passThrough)
+    }
+
+    func testOtherKeysTypeWhileAShortcutKeyIsStillHeld() {
+        _ = press(Self.hyperDown)
+        _ = press(Self.down("c"))
+        _ = press(Self.hyperUp)
+        XCTAssertEqual(press(Self.down("j")), .passThrough)
+    }
+
+    func testHeldKeyPressedAgainAfterAMissedKeyUpIsTyped() {
+        _ = press(Self.hyperDown)
+        _ = press(Self.down("c"))
         _ = press(Self.hyperUp)
         XCTAssertEqual(press(Self.down("c")), .passThrough)
     }
