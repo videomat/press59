@@ -186,8 +186,13 @@ struct GeneralSettingsView: View {
             }
 
             Section {
-                Button("How Press59 Works…", action: showGuide)
-                    .buttonStyle(.link)
+                HStack {
+                    Button("How Press59 Works…", action: showGuide)
+                        .buttonStyle(.link)
+                    Spacer()
+                    // Here too: when macOS hides the menu bar icon, its menu's Quit is out of reach.
+                    Button("Quit Press59") { NSApp.terminate(nil) }
+                }
             } footer: {
                 Text("Menu bar icon hidden? Hold Caps Lock and press , or open Press59 again to get back here.")
             }
